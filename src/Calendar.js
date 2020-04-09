@@ -16,7 +16,10 @@ const tableClasses = {
 
 const stateClasses = {
 	active: 'active',
-	inrange: 'active',
+	range: 'active',
+	start: 'start',
+	end: 'end',
+	name: 'calendar',
 };
 
 const button = (time, date) => `
@@ -25,11 +28,12 @@ const button = (time, date) => `
 	</button>
 `;
 
-const dispatchChangeEvent = ($element, values) => {
+const dispatchChangeEvent = ($element, values, name) => {
 	$element.dispatchEvent(
 		new CustomEvent('Calendar.change', {
 			detail: {
 				values,
+				name,
 			},
 		}),
 	);
@@ -39,6 +43,7 @@ const optionsDefault = {
 	single: true,
 	firstDay: 0,
 	stateClasses,
+	months,
 };
 
 /**
@@ -103,7 +108,7 @@ export default class Calendar {
 					this.picked = [];
 					$target.classList.remove(this.options.stateClasses.active);
 
-					dispatchChangeEvent(this.rootElement, this.picked);
+					dispatchChangeEvent(this.rootElement, this.picked, this.options.name);
 
 					return this.rootElement.setAttribute(
 						'data-picked-dates',
@@ -118,7 +123,7 @@ export default class Calendar {
 					this.picked = [parseInt($target.getAttribute('data-date'), 10)];
 					$target.classList.add(this.options.stateClasses.active);
 
-					dispatchChangeEvent(this.rootElement, this.picked);
+					dispatchChangeEvent(this.rootElement, this.picked, this.options.name);
 
 					return this.rootElement.setAttribute(
 						'data-picked-dates',
@@ -134,7 +139,7 @@ export default class Calendar {
 					if (1 < this.picked.length) {
 						buttons.map($el => {
 							$el.classList.remove(this.options.stateClasses.active);
-							$el.classList.remove(this.options.stateClasses.inrange);
+							$el.classList.remove(this.options.stateClasses.range);
 
 							return true;
 						});
@@ -152,7 +157,7 @@ export default class Calendar {
 					this.picked.sort();
 					$target.classList.add(this.options.stateClasses.active);
 
-					dispatchChangeEvent(this.rootElement, this.picked);
+					dispatchChangeEvent(this.rootElement, this.picked, this.options.name);
 
 					return this.rootElement.setAttribute(
 						'data-picked-dates',
@@ -192,6 +197,7 @@ export default class Calendar {
 	onMouseMove(event) {
 		const { target: $target } = event;
 		const items = this.$body.querySelectorAll('.js-button');
+		let isReversed = false;
 
 		if (!$target.matches('.js-button')) {
 			return;
@@ -201,30 +207,60 @@ export default class Calendar {
 			return;
 		}
 
-		let from = new Date(this.picked[0]);
-		let to = new Date(parseInt($target.getAttribute('data-date'), 10));
+		const $start = this.$body.querySelector(`[data-date="${this.picked[0]}"]`);
 
-		if (from.getTime() > to.getTime()) {
-			to = new Date(this.picked[0]);
-			from = new Date(parseInt($target.getAttribute('data-date'), 10));
+		let from = parseInt(this.picked[0], 10);
+		let to = parseInt($target.getAttribute('data-date'), 10);
+
+		if (from > to) {
+			isReversed = true;
+			to = parseInt(this.picked[0], 10);
+			from = parseInt($target.getAttribute('data-date'), 10);
 		}
 
 		items.forEach(item => {
-			const date = new Date(parseInt(item.getAttribute('data-date'), 10));
-			item.classList.remove(this.options.stateClasses.inrange);
+			const date = parseInt(item.getAttribute('data-date'), 10);
+			item.classList.remove(
+				this.options.stateClasses.range,
+				this.options.stateClasses.end,
+				this.options.stateClasses.start,
+			);
 
 			if (isBetween(date, from, to)) {
-				item.classList.add(this.options.stateClasses.inrange);
+				item.classList.add(this.options.stateClasses.range);
 			}
 		});
+
+		// Start and end classes
+		if ($start) {
+			$start.classList.add(this.options.stateClasses.start);
+		}
+
+		$target.classList.add(this.options.stateClasses.end);
+
+		if (isReversed) {
+			if ($start) {
+				$start.classList.add(this.options.stateClasses.end);
+				$start.classList.remove(this.options.stateClasses.start);
+			}
+
+			$target.classList.add(this.options.stateClasses.start);
+			$target.classList.remove(this.options.stateClasses.end);
+		}
 	}
 
 	// onMouseLeave() {}
 
 	renderHeader(month, year) {
-		this.$title.innerHTML = `${months[month]} ${year}`;
-		this.$previous.setAttribute('data-content', months[0 > month - 1 ? 11 : month - 1]);
-		this.$next.setAttribute('data-content', months[11 < month + 1 ? 0 : month + 1]);
+		this.$title.innerHTML = `${this.options.months[month]} ${year}`;
+		this.$previous.setAttribute(
+			'data-content',
+			this.options.months[0 > month - 1 ? 11 : month - 1],
+		);
+		this.$next.setAttribute(
+			'data-content',
+			this.options.months[11 < month + 1 ? 0 : month + 1],
+		);
 	}
 
 	renderCalendar(month, year) {
@@ -284,7 +320,7 @@ export default class Calendar {
 					) {
 						const $button = inner.querySelector('button');
 
-						$button.classList.add(this.options.stateClasses.inrange);
+						$button.classList.add(this.options.stateClasses.range);
 					}
 
 					// Hook

@@ -20,3 +20,5 @@ yarn add @19h47/calendar
 An example is located right [here](https://19h47.github.io/19h47-calendar/), see [sources](/docs/index.html).
 
 ## Acknowledgments
+
+-   (Litepicker)[https://github.com/wakirin/Litepicker]

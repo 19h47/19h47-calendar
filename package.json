@@ -1,6 +1,6 @@
 {
 	"name": "@19h47/calendar",
-	"version": "0.0.1",
+	"version": "0.0.6",
 	"description": "Calendar",
 	"main": "dist/main.js",
 	"scripts": {

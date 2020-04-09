@@ -10,5 +10,5 @@
  * @return {bool}
  */
 export default function (check, from, to) {
-	return check.getTime() <= to.getTime() && check.getTime() >= from.getTime();
+	return check <= to && check >= from;
 }
