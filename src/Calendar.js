@@ -1,20 +1,22 @@
 import { ARROW_UP, ARROW_RIGHT, ARROW_DOWN, ARROW_LEFT } from '@19h47/keycode';
 
-import getFirstDay from 'utils/getFirstDay';
 import getDaysInMonth from 'utils/getDaysInMonth';
-// import getTheLastElementOfArray from 'utils/getTheLastElementOfArray';
-// import formatDate from 'utils/formatDate';
+import getFirstDay from 'utils/getFirstDay';
 import isBetween from 'utils/isBetween';
 
-import { classes, months /* , common */ } from '@/config';
-
-// import flights from '@/data/flights.json';
+const lang = document.documentElement.getAttribute('lang') || 'en';
+const months = require('@/../languages/months.json')[lang];
 
 const tableClasses = {
 	ROW: 'Calendar__row',
 	CELL: 'Calendar__cell',
 	CELL_ACTIVE: 'Calendar__cell--active',
 	CELL_INNER: 'Calendar__cell__inner',
+};
+
+const stateClasses = {
+	active: 'active',
+	inrange: 'active',
 };
 
 const button = (time, date) => `
@@ -33,7 +35,11 @@ const dispatchChangeEvent = ($element, values) => {
 	);
 };
 
-// const getFlight = date => flights.find(flight => flight.date.date.slice(0, 10) === date);
+const optionsDefault = {
+	single: true,
+	firstDay: 0,
+	stateClasses,
+};
 
 /**
  *
@@ -41,9 +47,11 @@ const dispatchChangeEvent = ($element, values) => {
  * @param {object} container
  */
 export default class Calendar {
-	constructor(container) {
+	constructor(container, options = {}) {
 		this.rootElement = container;
 		this.today = new Date();
+
+		this.options = { ...optionsDefault, ...options };
 
 		this.current = {
 			date: this.today.getDate(),
@@ -63,12 +71,6 @@ export default class Calendar {
 
 		this.active = [];
 		this.picked = [];
-
-		// @TODO Make options
-		this.single = true;
-		this.firstDay = 0;
-
-		// this.flightCount = JSON.parse(this.rootElement.getAttribute('data-flight-count'));
 
 		this.onMouseMove = this.onMouseMove.bind(this);
 
@@ -92,11 +94,14 @@ export default class Calendar {
 				return this.previous();
 			}
 
-			if (this.single) {
-				if ($target.matches('.js-button') && $target.classList.contains(classes.active)) {
+			if (this.options.single) {
+				if (
+					$target.matches('.js-button') &&
+					$target.classList.contains(this.options.stateClasses.active)
+				) {
 					this.active = [];
 					this.picked = [];
-					$target.classList.remove(classes.active);
+					$target.classList.remove(this.options.stateClasses.active);
 
 					dispatchChangeEvent(this.rootElement, this.picked);
 
@@ -107,11 +112,11 @@ export default class Calendar {
 				}
 
 				if ($target.matches('.js-button')) {
-					this.active.map($el => $el.classList.remove(classes.active));
+					this.active.map($el => $el.classList.remove(this.options.stateClasses.active));
 
 					this.active.push($target);
 					this.picked = [parseInt($target.getAttribute('data-date'), 10)];
-					$target.classList.add(classes.active);
+					$target.classList.add(this.options.stateClasses.active);
 
 					dispatchChangeEvent(this.rootElement, this.picked);
 
@@ -122,14 +127,14 @@ export default class Calendar {
 				}
 			}
 
-			if (!this.single) {
+			if (!this.options.single) {
 				if ($target.matches('.js-button')) {
 					const buttons = [...this.$body.querySelectorAll('.js-button')];
 
 					if (1 < this.picked.length) {
 						buttons.map($el => {
-							$el.classList.remove(classes.active);
-							$el.classList.remove(classes.inrange);
+							$el.classList.remove(this.options.stateClasses.active);
+							$el.classList.remove(this.options.stateClasses.inrange);
 
 							return true;
 						});
@@ -144,7 +149,8 @@ export default class Calendar {
 
 					this.active.push($target);
 					this.picked.push(parseInt($target.getAttribute('data-date'), 10));
-					$target.classList.add(classes.active);
+					this.picked.sort();
+					$target.classList.add(this.options.stateClasses.active);
 
 					dispatchChangeEvent(this.rootElement, this.picked);
 
@@ -178,13 +184,14 @@ export default class Calendar {
 			}
 		});
 
-		if (!this.single) {
+		if (!this.options.single) {
 			this.$body.addEventListener('mousemove', this.onMouseMove, false);
 		}
 	}
 
 	onMouseMove(event) {
 		const { target: $target } = event;
+		const items = this.$body.querySelectorAll('.js-button');
 
 		if (!$target.matches('.js-button')) {
 			return;
@@ -194,17 +201,20 @@ export default class Calendar {
 			return;
 		}
 
-		const from = new Date(this.picked[0]);
-		const to = new Date(parseInt($target.getAttribute('data-date'), 10));
+		let from = new Date(this.picked[0]);
+		let to = new Date(parseInt($target.getAttribute('data-date'), 10));
 
-		const items = this.$body.querySelectorAll('.js-button');
+		if (from.getTime() > to.getTime()) {
+			to = new Date(this.picked[0]);
+			from = new Date(parseInt($target.getAttribute('data-date'), 10));
+		}
 
 		items.forEach(item => {
 			const date = new Date(parseInt(item.getAttribute('data-date'), 10));
-			item.classList.remove(classes.inrange);
+			item.classList.remove(this.options.stateClasses.inrange);
 
 			if (isBetween(date, from, to)) {
-				item.classList.add(classes.inrange);
+				item.classList.add(this.options.stateClasses.inrange);
 			}
 		});
 	}
@@ -226,7 +236,7 @@ export default class Calendar {
 			row.classList.add(tableClasses.ROW);
 
 			// Creating individual cells, filing them up with data.
-			for (let j = this.firstDay; 7 + this.firstDay > j; j += 1) {
+			for (let j = this.options.firstDay; 7 + this.options.firstDay > j; j += 1) {
 				const date = new Date(year, month, day);
 				const cell = document.createElement('td');
 				const inner = document.createElement('div');
@@ -262,36 +272,24 @@ export default class Calendar {
 					if (this.picked.includes(date.getTime())) {
 						const $button = inner.querySelector('button');
 
-						$button.classList.add(classes.active);
+						$button.classList.add(this.options.stateClasses.active);
 						this.active.push($button);
 					}
 
 					// Range dates
 					if (
-						!this.single &&
+						!this.options.single &&
 						0 !== this.picked.length &&
 						isBetween(date, new Date(this.picked[0]), new Date(this.picked[1]))
 					) {
 						const $button = inner.querySelector('button');
 
-						$button.classList.add(classes.inrange);
+						$button.classList.add(this.options.stateClasses.inrange);
 					}
 
-					// Flight count
-					// if (this.flightCount && inner.querySelector('button')) {
-					// 	const flight = getFlight(date.toISOString().slice(0, 10));
-
-					// 	if (flight) {
-					// 		const { count } = flight;
-					// 		const $button = inner.querySelector('button');
-
-					// 		$button.setAttribute(
-					// 			'data-content',
-					// 			`${count} ${1 < count ? common.flights : common.flight}`,
-					// 		);
-					// 		$button.classList.add('Calendar__tooltip');
-					// 	}
-					// }
+					// Hook
+					// Not sure about this, but it works
+					this.renderInner(inner, date);
 
 					inner.classList.add(tableClasses.CELL_INNER);
 
@@ -336,4 +334,6 @@ export default class Calendar {
 	clear() {
 		this.$body.innerHTML = '';
 	}
+
+	renderInner(inner, date) {} // eslint-disable-line
 }
