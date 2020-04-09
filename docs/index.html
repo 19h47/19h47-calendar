@@ -1,0 +1,23 @@
+<!doctype html><html lang="en"><head><meta charset="UTF-8"/><title>Calendar</title><link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"/><style>.Calendar__table {
+				table-layout: fixed;
+				word-wrap: break-word;
+			}
+
+			.Calendar__cell__inner {
+				text-align: center;
+			}
+
+			.Calendar__row th {
+				text-align: center;
+			}
+
+			.btn.is-in-range {
+				background-color: #f8f9fa;
+			}</style></head><body><div class="container-fluid"><div class="row py-5"><div class="col-12 col-lg-10 offset-lg-1"><h1 class="my-5"><a href="https://github.com/19h47/calendar">Calendar</a></h1></div></div><div class="row"><div class="col-12 col-lg-4 offset-lg-4"><div class="Calendar js-calendar" data-flight-count="true" data-picked-dates="[]"><header class="Calendar__header btn-group d-flex"><button class="Calendar__previous btn btn-outline-primary w-100 js-previous" type="button">Previous Month</button> <button type="button" class="Calendar__title btn btn-outline-primary w-100 js-title">01</button> <button class="Calendar__next btn btn-outline-primary w-100 js-next" type="button">Next Month</button></header><table class="Calendar__table table mt-5"><thead class="Calendar__days"><tr class="Calendar__row"><th title="Sunday">Sun.</th><th title="Monday">Mo.</th><th title="Tuesday">Tu.</th><th title="Wednesday">We.</th><th title="Thursday">Th.</th><th title="Friday">Fr.</th><th title="Saturday">Sa.</th></tr></thead><tbody class="js-body"></tbody></table></div></div></div></div><script src="main.js"></script><script>const $calendar = document.querySelector('.js-calendar');
+
+			const calendar = new Calendar.default($calendar);
+			calendar.init();
+
+			$calendar.addEventListener('Calendar.change', event => {
+				console.log(event.detail.values);
+			});</script></body></html>

@@ -1,0 +1,24 @@
+{
+	"fr": {
+		"abbreviations": [
+			"Dim.",
+			"Lun.",
+			"Mar.",
+			"Mer.",
+			"Jeu.",
+			"Ven.",
+			"Sam."
+		]
+	},
+	"en": {
+		"abbreviations": [
+			"Sun.",
+			"Mon.",
+			"Tues.",
+			"Wed.",
+			"Thurs.",
+			"Fri.",
+			"Sat."
+		]
+	}
+}
