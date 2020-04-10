@@ -997,7 +997,9 @@
 			const flightCount = JSON.parse($calendar.getAttribute('data-flight-count'));
 			const getFlight = date =>
 				flights.find(flight =>
-					new Date(flight.date).toISOString().slice(0, 10) === date ? flight : false,
+					new Date(flight.date.slice(0, 10)).toISOString().slice(0, 10) === date
+						? flight
+						: false,
 				);
 
 			const calendar = new Calendar.default($calendar, { single: false });
