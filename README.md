@@ -10,10 +10,11 @@ yarn add @19h47/calendar
 
 ## Options
 
-| Option   | Type    | Default | description                                                      |
+| Option   | Type    | Default | Description                                                      |
 | -------- | ------- | ------- | ---------------------------------------------------------------- |
 | single   | Boolean | true    | Choose a single date instead of a date range.                    |
 | firstDay | Number  | 0       | Day of start week. (0 - Sunday, 1 - Monday, 2 - Tuesday, etc...) |
+| deselect | Boolean | false   | In single mode, does date is deselectable?                       |
 
 ## Example
 

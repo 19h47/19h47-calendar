@@ -1002,7 +1002,7 @@
 						: false,
 				);
 
-			const calendar = new Calendar.default($calendar, { single: false });
+			const calendar = new Calendar.default($calendar, { single: true, deselect: true });
 			calendar.renderInner = (inner, date, common) => {
 				if (flightCount && inner.querySelector('button')) {
 					const flight = getFlight(date.toISOString().slice(0, 10));

@@ -44,6 +44,7 @@ const optionsDefault = {
 	firstDay: 0,
 	stateClasses,
 	months,
+	deselect: false,
 };
 
 /**
@@ -79,9 +80,7 @@ export default class Calendar {
 
 		this.onMouseMove = this.onMouseMove.bind(this);
 
-		this.renderHeader(this.current.month, this.current.year);
-		this.renderCalendar(this.current.month, this.current.year);
-
+		this.render();
 		this.initEvents();
 	}
 
@@ -102,7 +101,8 @@ export default class Calendar {
 			if (this.options.single) {
 				if (
 					$target.matches('.js-button') &&
-					$target.classList.contains(this.options.stateClasses.active)
+					$target.classList.contains(this.options.stateClasses.active) &&
+					this.options.deselect
 				) {
 					this.active = [];
 					this.picked = [];
@@ -350,9 +350,7 @@ export default class Calendar {
 		this.current.year = 11 === this.current.month ? this.current.year + 1 : this.current.year;
 		this.current.month = (this.current.month + 1) % 12;
 
-		this.clear();
-		this.renderHeader(this.current.month, this.current.year);
-		this.renderCalendar(this.current.month, this.current.year);
+		this.render();
 	}
 
 	/**
@@ -362,13 +360,17 @@ export default class Calendar {
 		this.current.year = 0 === this.current.month ? this.current.year - 1 : this.current.year;
 		this.current.month = 0 === this.current.month ? 11 : this.current.month - 1;
 
-		this.clear();
-		this.renderHeader(this.current.month, this.current.year);
-		this.renderCalendar(this.current.month, this.current.year);
+		this.render();
 	}
 
 	clear() {
 		this.$body.innerHTML = '';
+	}
+
+	render() {
+		this.clear();
+		this.renderHeader(this.current.month, this.current.year);
+		this.renderCalendar(this.current.month, this.current.year);
 	}
 
 	renderInner(inner, date) {} // eslint-disable-line
