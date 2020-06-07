@@ -9,6 +9,6 @@
  *
  * @return {bool}
  */
-export default function (check, from, to) {
+export default function isBetween(check, from, to) {
 	return check <= to && check >= from;
 }

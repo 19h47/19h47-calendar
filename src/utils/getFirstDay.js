@@ -6,7 +6,7 @@
  * @see https://stackoverflow.com/a/33508649/5091221
  * @return
  */
-export default function (month, year, firstDay = 0) {
+export default function getFirstDay(month, year, firstDay = 0) {
 	const day = new Date(year, month).getDay();
 
 	if (1 === firstDay) {
