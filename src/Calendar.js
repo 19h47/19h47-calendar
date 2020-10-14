@@ -272,12 +272,12 @@ export default class Calendar {
 			row.classList.add(tableClasses.ROW);
 
 			// Creating individual cells, filing them up with data.
-			for (let j = this.options.firstDay; 7 + this.options.firstDay > j; j += 1) {
+			for (let j = this.options.firstDay; j < 7 + this.options.firstDay; j += 1) {
 				const date = new Date(year, month, day);
 				const cell = document.createElement('td');
 				const inner = document.createElement('div');
 
-				if (0 === i && j < getFirstDay(month, year)) {
+				if (0 === i && j < getFirstDay(month, year, this.options.firstDay)) {
 					// Empty cell
 					row.appendChild(cell);
 				} else if (day > getDaysInMonth(year, month)) {
