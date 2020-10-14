@@ -22,4 +22,4 @@ An example is located right [here](https://19h47.github.io/19h47-calendar/), see
 
 ## Acknowledgments
 
--   (Litepicker)[https://github.com/wakirin/Litepicker]
+-   [Litepicker](https://github.com/wakirin/Litepicker)
