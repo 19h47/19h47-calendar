@@ -1,11 +1,8 @@
-import { ARROW_UP, ARROW_RIGHT, ARROW_DOWN, ARROW_LEFT } from '@19h47/keycode';
+import getDaysInMonth from './utils/getDaysInMonth';
+import getFirstDay from './utils/getFirstDay';
+import isBetween from './utils/isBetween';
 
-import getDaysInMonth from 'utils/getDaysInMonth';
-import getFirstDay from 'utils/getFirstDay';
-import isBetween from 'utils/isBetween';
-
-const lang = document.documentElement.getAttribute('lang') || 'en';
-const months = require('@/../languages/months.json')[lang];
+import months from './../languages/months.json';
 
 const tableClasses = {
 	ROW: 'Calendar__row',
@@ -13,6 +10,14 @@ const tableClasses = {
 	CELL_ACTIVE: 'Calendar__cell--active',
 	CELL_INNER: 'Calendar__cell__inner',
 };
+
+interface CalendarStateClasses {
+	active: string;
+	range: string;
+	start: string;
+	end: string;
+	name: string;
+}
 
 const stateClasses = {
 	active: 'active',
@@ -28,7 +33,7 @@ const button = (time, date) => `
 	</button>
 `;
 
-const dispatchChangeEvent = ($element, values, name) => {
+const dispatchChangeEvent = ($element: HTMLElement, values : number[], name: string | undefined) => {
 	$element.dispatchEvent(
 		new CustomEvent('Calendar.change', {
 			detail: {
@@ -39,22 +44,53 @@ const dispatchChangeEvent = ($element, values, name) => {
 	);
 };
 
+const lang = document.documentElement.getAttribute('lang') || 'en';
+
 const optionsDefault = {
 	single: true,
 	firstDay: 0,
 	stateClasses,
-	months,
+	months: months[lang],
 	deselect: false,
 };
+
+interface CalendarOptions {
+	single?: boolean;
+	firstDay: number;
+	stateClasses: CalendarStateClasses;
+	months: string[];
+	deselect?: boolean;
+	name?: string;
+	[key: string]: any;
+}
+
+interface CalendarCurrent {
+	date: number;
+	month: number;
+	year: number;
+}
 
 /**
  *
  * @constructor
- * @param {object} container
+ * @param {HTMLElement} el
  */
 export default class Calendar {
-	constructor(container, options = {}) {
-		this.rootElement = container;
+	today: Date;
+	options: CalendarOptions = optionsDefault;
+	current: CalendarCurrent;
+
+	el: HTMLElement;
+	$title: HTMLElement;
+	$next: HTMLButtonElement;
+	$previous: HTMLButtonElement;
+	$body: HTMLTableElement;
+
+	active: HTMLElement[] = [];
+	picked: number[];
+
+	constructor(el, options = {}) {
+		this.el = el;
 		this.today = new Date();
 
 		this.options = { ...optionsDefault, ...options };
@@ -70,15 +106,16 @@ export default class Calendar {
 		// console.info('Calendar.init');
 
 		// UI
-		this.$title = this.rootElement.querySelector('.js-title');
-		this.$next = this.rootElement.querySelector('.js-next');
-		this.$previous = this.rootElement.querySelector('.js-previous');
-		this.$body = this.rootElement.querySelector('.js-body');
+		this.$title = this.el.querySelector('.js-title') as HTMLElement;
+		this.$next = this.el.querySelector('.js-next') as HTMLButtonElement;
+		this.$previous = this.el.querySelector('.js-previous') as HTMLButtonElement;
+		this.$body = this.el.querySelector('.js-body') as HTMLTableElement;
 
 		this.active = [];
 		this.picked = [];
 
-		this.onMouseMove = this.onMouseMove.bind(this);
+		this.onMousemove = this.onMousemove.bind(this);
+		this.onKeydown = this.onKeydown.bind(this);
 
 		this.render();
 		this.initEvents();
@@ -87,8 +124,12 @@ export default class Calendar {
 	initEvents() {
 		// console.info('Calendar.initEvents');
 
-		this.rootElement.addEventListener('click', event => {
-			const { target: $target } = event;
+		this.el.addEventListener('click', event => {
+			const $target = event.target as HTMLElement;
+
+			if ($target === null || $target === undefined) {
+				return;
+			}
 
 			if ($target.matches('.js-next') || $target.matches('.js-title')) {
 				return this.next();
@@ -108,9 +149,9 @@ export default class Calendar {
 					this.picked = [];
 					$target.classList.remove(this.options.stateClasses.active);
 
-					dispatchChangeEvent(this.rootElement, this.picked, this.options.name);
+					dispatchChangeEvent(this.el, this.picked, this.options.name);
 
-					return this.rootElement.setAttribute(
+					return this.el.setAttribute(
 						'data-picked-dates',
 						JSON.stringify(this.picked),
 					);
@@ -120,12 +161,12 @@ export default class Calendar {
 					this.active.map($el => $el.classList.remove(this.options.stateClasses.active));
 
 					this.active.push($target);
-					this.picked = [parseInt($target.getAttribute('data-date'), 10)];
+					this.picked = [parseInt($target.getAttribute('data-date') || '0', 10)];
 					$target.classList.add(this.options.stateClasses.active);
 
-					dispatchChangeEvent(this.rootElement, this.picked, this.options.name);
+					dispatchChangeEvent(this.el, this.picked, this.options.name);
 
-					return this.rootElement.setAttribute(
+					return this.el.setAttribute(
 						'data-picked-dates',
 						JSON.stringify(this.picked),
 					);
@@ -146,20 +187,20 @@ export default class Calendar {
 						this.active = [];
 						this.picked = [];
 
-						this.rootElement.setAttribute(
+						this.el.setAttribute(
 							'data-picked-dates',
 							JSON.stringify(this.picked),
 						);
 					}
 
 					this.active.push($target);
-					this.picked.push(parseInt($target.getAttribute('data-date'), 10));
+					this.picked.push(parseInt($target.getAttribute('data-date') || '0', 10));
 					this.picked.sort();
 					$target.classList.add(this.options.stateClasses.active);
 
-					dispatchChangeEvent(this.rootElement, this.picked, this.options.name);
+					dispatchChangeEvent(this.el, this.picked, this.options.name);
 
-					return this.rootElement.setAttribute(
+					return this.el.setAttribute(
 						'data-picked-dates',
 						JSON.stringify(this.picked),
 					);
@@ -169,32 +210,38 @@ export default class Calendar {
 			return false;
 		});
 
-		this.$title.addEventListener('keydown', event => {
-			switch (event.keyCode) {
-				case ARROW_RIGHT:
-				case ARROW_DOWN:
-					event.preventDefault();
-					this.next();
-
-					break;
-
-				case ARROW_LEFT:
-				case ARROW_UP:
-					event.preventDefault();
-					this.previous();
-
-					break;
-
-				default:
-			}
-		});
+		this.$title.addEventListener('keydown', this.onKeydown, false);
 
 		if (!this.options.single) {
-			this.$body.addEventListener('mousemove', this.onMouseMove, false);
+			this.$body.addEventListener('mousemove', this.onMousemove, false);
 		}
 	}
 
-	onMouseMove(event) {
+	onKeydown(event: KeyboardEvent) {
+		const { key, code } = event;
+
+		const next = () => {
+			event.preventDefault();
+			this.next();
+		}
+
+		const previous = () => {
+			event.preventDefault();
+			this.previous();
+		}
+
+		const codes: any = {
+			ArrowUp: previous,
+			ArrowLeft: previous,
+			ArrowDown: next,
+			ArrowRight: next,
+			default: () => false,
+		};
+
+		return (codes[key || code] || codes.default)();
+	}
+
+	onMousemove(event) {
 		const { target: $target } = event;
 		const items = this.$body.querySelectorAll('.js-button');
 		let isReversed = false;
@@ -209,17 +256,17 @@ export default class Calendar {
 
 		const $start = this.$body.querySelector(`[data-date="${this.picked[0]}"]`);
 
-		let from = parseInt(this.picked[0], 10);
+		let from = parseInt(this.picked[0].toString(), 10);
 		let to = parseInt($target.getAttribute('data-date'), 10);
 
 		if (from > to) {
 			isReversed = true;
-			to = parseInt(this.picked[0], 10);
+			to = parseInt(this.picked[0].toString(), 10);
 			from = parseInt($target.getAttribute('data-date'), 10);
 		}
 
 		items.forEach(item => {
-			const date = parseInt(item.getAttribute('data-date'), 10);
+			const date = parseInt(item.getAttribute('data-date') || '0', 10);
 			item.classList.remove(
 				this.options.stateClasses.range,
 				this.options.stateClasses.end,
@@ -286,7 +333,7 @@ export default class Calendar {
 				} else {
 					cell.classList.add(tableClasses.CELL);
 
-					inner.innerHTML = day;
+					inner.innerHTML = day.toString();
 
 					// Active futur date
 					if (date.getTime() > this.today.getTime()) {
@@ -308,8 +355,10 @@ export default class Calendar {
 					if (this.picked.includes(date.getTime())) {
 						const $button = inner.querySelector('button');
 
-						$button.classList.add(this.options.stateClasses.active);
-						this.active.push($button);
+						if ($button) {
+							$button.classList.add(this.options.stateClasses.active);
+							this.active.push($button);
+						}
 					}
 
 					// Range dates
@@ -320,7 +369,9 @@ export default class Calendar {
 					) {
 						const $button = inner.querySelector('button');
 
-						$button.classList.add(this.options.stateClasses.range);
+						if ($button) {
+							$button.classList.add(this.options.stateClasses.range);
+						}
 					}
 
 					// Hook
