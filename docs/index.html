@@ -15,6 +15,10 @@
 			text-align: center;
 		}
 
+		.Calendar__cell.Calendar__cell--current .btn {
+			border-color: red;
+		}
+
 		.Calendar__row th {
 			text-align: center;
 		}
@@ -168,6 +172,33 @@
 						</button>
 					</header>
 
+					<table class="Calendar__table table mt-5" role="grid">
+						<thead class="Calendar__days">
+							<tr class="Calendar__row">
+								<th scope="col" abbr="Sunday">Sun.</th>
+								<th scope="col" abbr="Monday">Mo.</th>
+								<th scope="col" abbr="Tuesday">Tu.</th>
+								<th scope="col" abbr="Wednesday">We.</th>
+								<th scope="col" abbr="Thursday">Th.</th>
+								<th scope="col" abbr="Friday">Fr.</th>
+								<th scope="col" abbr="Saturday">Sa.</th>
+							</tr>
+						</thead>
+
+						<tbody class="js-body"></tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+
+		<div class="row py-5 js-wrapper">
+			<div class="col-12 col-lg-5 offset-lg-1">
+				<h2 class="my-5">
+					<a href="https://github.com/19h47/19h47-calendar">Calendar <sup class="js-calendar-value"></sup></a>
+				</h2>
+			</div>
+			<div class="col-12 col-lg-10 offset-lg-1">
+				<div class="Calendar js-calendar" data-flight-count="true" data-picked-dates="[]" data-single="false">
 					<table class="Calendar__table table mt-5" role="grid">
 						<thead class="Calendar__days">
 							<tr class="Calendar__row">

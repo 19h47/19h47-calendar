@@ -1,14 +1,15 @@
-import getDaysInMonth from './utils/getDaysInMonth';
-import getFirstDay from './utils/getFirstDay';
-import isBetween from './utils/isBetween';
+import getDaysInMonth from "./utils/getDaysInMonth";
+import getFirstDay from "./utils/getFirstDay";
+import isBetween from "./utils/isBetween";
 
-import months from './../languages/months.json';
+import months from "./../languages/months.json";
 
 const tableClasses = {
-	ROW: 'Calendar__row',
-	CELL: 'Calendar__cell',
-	CELL_ACTIVE: 'Calendar__cell--active',
-	CELL_INNER: 'Calendar__cell__inner',
+	ROW: "Calendar__row",
+	CELL: "Calendar__cell",
+	CELL_ACTIVE: "Calendar__cell--active",
+	CELL_CURRENT: "Calendar__cell--current",
+	CELL_INNER: "Calendar__cell__inner",
 };
 
 interface CalendarStateClasses {
@@ -20,11 +21,11 @@ interface CalendarStateClasses {
 }
 
 const stateClasses = {
-	active: 'active',
-	range: 'active',
-	start: 'start',
-	end: 'end',
-	name: 'calendar',
+	active: "active",
+	range: "active",
+	start: "start",
+	end: "end",
+	name: "calendar",
 };
 
 const button = (time, date) => `
@@ -33,18 +34,22 @@ const button = (time, date) => `
 	</button>
 `;
 
-const dispatchChangeEvent = ($element: HTMLElement, values : number[], name: string | undefined) => {
+const dispatchChangeEvent = (
+	$element: HTMLElement,
+	values: number[],
+	name: string | undefined
+) => {
 	$element.dispatchEvent(
-		new CustomEvent('Calendar.change', {
+		new CustomEvent("Calendar.change", {
 			detail: {
 				values,
 				name,
 			},
-		}),
+		})
 	);
 };
 
-const lang = document.documentElement.getAttribute('lang') || 'en';
+const lang = document.documentElement.getAttribute("lang") || "en";
 
 const optionsDefault = {
 	single: true,
@@ -61,7 +66,6 @@ interface CalendarOptions {
 	months: string[];
 	deselect?: boolean;
 	name?: string;
-	[key: string]: any;
 }
 
 interface CalendarCurrent {
@@ -81,10 +85,11 @@ export default class Calendar {
 	current: CalendarCurrent;
 
 	el: HTMLElement;
-	$title: HTMLElement;
-	$next: HTMLButtonElement;
-	$previous: HTMLButtonElement;
 	$body: HTMLTableElement;
+
+	$title: HTMLElement | null;
+	$next: HTMLButtonElement | null;
+	$previous: HTMLButtonElement | null;
 
 	active: HTMLElement[] = [];
 	picked: number[];
@@ -100,17 +105,18 @@ export default class Calendar {
 			month: this.today.getMonth(),
 			year: this.today.getFullYear(),
 		};
+
+		// UI
+		this.$title = this.el.querySelector(".js-title") as HTMLElement;
+		this.$body = this.el.querySelector(".js-body") as HTMLTableElement;
+
+		this.$next = this.el.querySelector(".js-next") as HTMLButtonElement;
+		this.$previous = this.el.querySelector(
+			".js-previous"
+		) as HTMLButtonElement;
 	}
 
 	init() {
-		// console.info('Calendar.init');
-
-		// UI
-		this.$title = this.el.querySelector('.js-title') as HTMLElement;
-		this.$next = this.el.querySelector('.js-next') as HTMLButtonElement;
-		this.$previous = this.el.querySelector('.js-previous') as HTMLButtonElement;
-		this.$body = this.el.querySelector('.js-body') as HTMLTableElement;
-
 		this.active = [];
 		this.picked = [];
 
@@ -124,63 +130,83 @@ export default class Calendar {
 	initEvents() {
 		// console.info('Calendar.initEvents');
 
-		this.el.addEventListener('click', event => {
+		this.el.addEventListener("click", (event) => {
 			const $target = event.target as HTMLElement;
 
 			if ($target === null || $target === undefined) {
 				return;
 			}
 
-			if ($target.matches('.js-next') || $target.matches('.js-title')) {
+			if ($target.matches(".js-next") || $target.matches(".js-title")) {
 				return this.next();
 			}
 
-			if ($target.matches('.js-previous')) {
+			if ($target.matches(".js-previous")) {
 				return this.previous();
 			}
 
 			if (this.options.single) {
 				if (
-					$target.matches('.js-button') &&
-					$target.classList.contains(this.options.stateClasses.active) &&
+					$target.matches(".js-button") &&
+					$target.classList.contains(
+						this.options.stateClasses.active
+					) &&
 					this.options.deselect
 				) {
 					this.active = [];
 					this.picked = [];
 					$target.classList.remove(this.options.stateClasses.active);
 
-					dispatchChangeEvent(this.el, this.picked, this.options.name);
+					dispatchChangeEvent(
+						this.el,
+						this.picked,
+						this.options.name
+					);
 
 					return this.el.setAttribute(
-						'data-picked-dates',
-						JSON.stringify(this.picked),
+						"data-picked-dates",
+						JSON.stringify(this.picked)
 					);
 				}
 
-				if ($target.matches('.js-button')) {
-					this.active.map($el => $el.classList.remove(this.options.stateClasses.active));
+				if ($target.matches(".js-button")) {
+					this.active.map(($el) =>
+						$el.classList.remove(this.options.stateClasses.active)
+					);
 
 					this.active.push($target);
-					this.picked = [parseInt($target.getAttribute('data-date') || '0', 10)];
+					this.picked = [
+						parseInt($target.getAttribute("data-date") || "0", 10),
+					];
 					$target.classList.add(this.options.stateClasses.active);
 
-					dispatchChangeEvent(this.el, this.picked, this.options.name);
+					dispatchChangeEvent(
+						this.el,
+						this.picked,
+						this.options.name
+					);
 
 					return this.el.setAttribute(
-						'data-picked-dates',
-						JSON.stringify(this.picked),
+						"data-picked-dates",
+						JSON.stringify(this.picked)
 					);
 				}
 			}
 
 			if (!this.options.single) {
-				if ($target.matches('.js-button')) {
-					const buttons = [...this.$body.querySelectorAll('.js-button')];
+				if ($target.matches(".js-button")) {
+					const buttons = [
+						...this.$body.querySelectorAll(".js-button"),
+					];
 
 					if (1 < this.picked.length) {
-						buttons.map($el => {
-							$el.classList.remove(this.options.stateClasses.active);
-							$el.classList.remove(this.options.stateClasses.range);
+						buttons.map(($el) => {
+							$el.classList.remove(
+								this.options.stateClasses.active
+							);
+							$el.classList.remove(
+								this.options.stateClasses.range
+							);
 
 							return true;
 						});
@@ -188,21 +214,27 @@ export default class Calendar {
 						this.picked = [];
 
 						this.el.setAttribute(
-							'data-picked-dates',
-							JSON.stringify(this.picked),
+							"data-picked-dates",
+							JSON.stringify(this.picked)
 						);
 					}
 
 					this.active.push($target);
-					this.picked.push(parseInt($target.getAttribute('data-date') || '0', 10));
+					this.picked.push(
+						parseInt($target.getAttribute("data-date") || "0", 10)
+					);
 					this.picked.sort();
 					$target.classList.add(this.options.stateClasses.active);
 
-					dispatchChangeEvent(this.el, this.picked, this.options.name);
+					dispatchChangeEvent(
+						this.el,
+						this.picked,
+						this.options.name
+					);
 
 					return this.el.setAttribute(
-						'data-picked-dates',
-						JSON.stringify(this.picked),
+						"data-picked-dates",
+						JSON.stringify(this.picked)
 					);
 				}
 			}
@@ -210,10 +242,11 @@ export default class Calendar {
 			return false;
 		});
 
-		this.$title.addEventListener('keydown', this.onKeydown, false);
+		this.$title &&
+			this.$title.addEventListener("keydown", this.onKeydown, false);
 
 		if (!this.options.single) {
-			this.$body.addEventListener('mousemove', this.onMousemove, false);
+			this.$body.addEventListener("mousemove", this.onMousemove, false);
 		}
 	}
 
@@ -223,12 +256,12 @@ export default class Calendar {
 		const next = () => {
 			event.preventDefault();
 			this.next();
-		}
+		};
 
 		const previous = () => {
 			event.preventDefault();
 			this.previous();
-		}
+		};
 
 		const codes: any = {
 			ArrowUp: previous,
@@ -243,10 +276,10 @@ export default class Calendar {
 
 	onMousemove(event) {
 		const { target: $target } = event;
-		const items = this.$body.querySelectorAll('.js-button');
+		const items = this.$body.querySelectorAll(".js-button");
 		let isReversed = false;
 
-		if (!$target.matches('.js-button')) {
+		if (!$target.matches(".js-button")) {
 			return;
 		}
 
@@ -254,23 +287,25 @@ export default class Calendar {
 			return;
 		}
 
-		const $start = this.$body.querySelector(`[data-date="${this.picked[0]}"]`);
+		const $start = this.$body.querySelector(
+			`[data-date="${this.picked[0]}"]`
+		);
 
 		let from = parseInt(this.picked[0].toString(), 10);
-		let to = parseInt($target.getAttribute('data-date'), 10);
+		let to = parseInt($target.getAttribute("data-date"), 10);
 
 		if (from > to) {
 			isReversed = true;
 			to = parseInt(this.picked[0].toString(), 10);
-			from = parseInt($target.getAttribute('data-date'), 10);
+			from = parseInt($target.getAttribute("data-date"), 10);
 		}
 
-		items.forEach(item => {
-			const date = parseInt(item.getAttribute('data-date') || '0', 10);
+		items.forEach((item) => {
+			const date = parseInt(item.getAttribute("data-date") || "0", 10);
 			item.classList.remove(
 				this.options.stateClasses.range,
 				this.options.stateClasses.end,
-				this.options.stateClasses.start,
+				this.options.stateClasses.start
 			);
 
 			if (isBetween(date, from, to)) {
@@ -299,15 +334,20 @@ export default class Calendar {
 	// onMouseLeave() {}
 
 	renderHeader(month, year) {
-		this.$title.innerHTML = `${this.options.months[month]} ${year}`;
-		this.$previous.setAttribute(
-			'data-content',
-			this.options.months[0 > month - 1 ? 11 : month - 1],
-		);
-		this.$next.setAttribute(
-			'data-content',
-			this.options.months[11 < month + 1 ? 0 : month + 1],
-		);
+		if (this.$title) {
+			this.$title.innerHTML = `${this.options.months[month]} ${year}`;
+		}
+
+		this.$previous &&
+			this.$previous.setAttribute(
+				"data-content",
+				this.options.months[0 > month - 1 ? 11 : month - 1]
+			);
+		this.$next &&
+			this.$next.setAttribute(
+				"data-content",
+				this.options.months[11 < month + 1 ? 0 : month + 1]
+			);
 	}
 
 	renderCalendar(month, year) {
@@ -315,16 +355,23 @@ export default class Calendar {
 		let day = 1;
 		for (let i = 0; 6 >= i; i += 1) {
 			// Creates a table row.
-			const row = document.createElement('tr');
+			const row = document.createElement("tr");
 			row.classList.add(tableClasses.ROW);
 
 			// Creating individual cells, filing them up with data.
-			for (let j = this.options.firstDay; j < 7 + this.options.firstDay; j += 1) {
+			for (
+				let j = this.options.firstDay;
+				j < 7 + this.options.firstDay;
+				j += 1
+			) {
 				const date = new Date(year, month, day);
-				const cell = document.createElement('td');
-				const inner = document.createElement('div');
+				const cell = document.createElement("td");
+				const inner = document.createElement("div");
 
-				if (0 === i && j < getFirstDay(month, year, this.options.firstDay)) {
+				if (
+					0 === i &&
+					j < getFirstDay(month, year, this.options.firstDay)
+				) {
 					// Empty cell
 					row.appendChild(cell);
 				} else if (day > getDaysInMonth(year, month)) {
@@ -341,6 +388,15 @@ export default class Calendar {
 						cell.classList.add(tableClasses.CELL_ACTIVE);
 					}
 
+					// Add class to current day
+					if (
+						day === this.today.getDate() &&
+						year === this.today.getFullYear() &&
+						month === this.today.getMonth()
+					) {
+						cell.classList.add(tableClasses.CELL_CURRENT);
+					}
+
 					// Active current date
 					if (
 						day === this.today.getDate() &&
@@ -353,10 +409,12 @@ export default class Calendar {
 
 					// Picked date
 					if (this.picked.includes(date.getTime())) {
-						const $button = inner.querySelector('button');
+						const $button = inner.querySelector("button");
 
 						if ($button) {
-							$button.classList.add(this.options.stateClasses.active);
+							$button.classList.add(
+								this.options.stateClasses.active
+							);
 							this.active.push($button);
 						}
 					}
@@ -365,12 +423,18 @@ export default class Calendar {
 					if (
 						!this.options.single &&
 						0 !== this.picked.length &&
-						isBetween(date, new Date(this.picked[0]), new Date(this.picked[1]))
+						isBetween(
+							date,
+							new Date(this.picked[0]),
+							new Date(this.picked[1])
+						)
 					) {
-						const $button = inner.querySelector('button');
+						const $button = inner.querySelector("button");
 
 						if ($button) {
-							$button.classList.add(this.options.stateClasses.range);
+							$button.classList.add(
+								this.options.stateClasses.range
+							);
 						}
 					}
 
@@ -398,7 +462,10 @@ export default class Calendar {
 	 * Next month
 	 */
 	next() {
-		this.current.year = 11 === this.current.month ? this.current.year + 1 : this.current.year;
+		this.current.year =
+			11 === this.current.month
+				? this.current.year + 1
+				: this.current.year;
 		this.current.month = (this.current.month + 1) % 12;
 
 		this.render();
@@ -408,14 +475,18 @@ export default class Calendar {
 	 * Previous month
 	 */
 	previous() {
-		this.current.year = 0 === this.current.month ? this.current.year - 1 : this.current.year;
-		this.current.month = 0 === this.current.month ? 11 : this.current.month - 1;
+		this.current.year =
+			0 === this.current.month
+				? this.current.year - 1
+				: this.current.year;
+		this.current.month =
+			0 === this.current.month ? 11 : this.current.month - 1;
 
 		this.render();
 	}
 
 	clear() {
-		this.$body.innerHTML = '';
+		this.$body.innerHTML = "";
 	}
 
 	render() {
