@@ -24,7 +24,7 @@
 		}
 
 		.btn.range {
-			background-color: #f8f9fa;
+			background-color: rgba(0, 123, 255, 0.2);
 		}
 	</style>
 </head>
@@ -199,6 +199,88 @@
 			</div>
 			<div class="col-12 col-lg-10 offset-lg-1">
 				<div class="Calendar js-calendar" data-flight-count="true" data-picked-dates="[]" data-single="false">
+					<table class="Calendar__table table mt-5" role="grid">
+						<thead class="Calendar__days">
+							<tr class="Calendar__row">
+								<th scope="col" abbr="Sunday">Sun.</th>
+								<th scope="col" abbr="Monday">Mo.</th>
+								<th scope="col" abbr="Tuesday">Tu.</th>
+								<th scope="col" abbr="Wednesday">We.</th>
+								<th scope="col" abbr="Thursday">Th.</th>
+								<th scope="col" abbr="Friday">Fr.</th>
+								<th scope="col" abbr="Saturday">Sa.</th>
+							</tr>
+						</thead>
+
+						<tbody class="js-body"></tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+
+		<div class="row py-5 js-wrapper">
+			<div class="col-12 col-lg-5 offset-lg-1">
+				<h2 class="my-5">
+					<a href="https://github.com/19h47/19h47-calendar">Calendar <sup class="js-calendar-value"></sup></a>
+				</h2>
+			</div>
+			<div class="col-12 col-lg-10 offset-lg-1">
+				<div class="Calendar js-calendar" data-flight-count="true" data-picked-dates="[]" data-allow-past="true" data-single="false">
+
+					<header class="Calendar__header btn-group d-flex">
+						<button class="Calendar__previous btn btn-outline-primary w-100 js-previous" type="button">
+							Previous Month
+						</button>
+						<button type="button" class="Calendar__title btn btn-outline-primary w-100 js-title">
+							01
+						</button>
+						<button class="Calendar__next btn btn-outline-primary w-100 js-next" type="button">
+							Next Month
+						</button>
+					</header>
+
+					<table class="Calendar__table table mt-5" role="grid">
+						<thead class="Calendar__days">
+							<tr class="Calendar__row">
+								<th scope="col" abbr="Sunday">Sun.</th>
+								<th scope="col" abbr="Monday">Mo.</th>
+								<th scope="col" abbr="Tuesday">Tu.</th>
+								<th scope="col" abbr="Wednesday">We.</th>
+								<th scope="col" abbr="Thursday">Th.</th>
+								<th scope="col" abbr="Friday">Fr.</th>
+								<th scope="col" abbr="Saturday">Sa.</th>
+							</tr>
+						</thead>
+
+						<tbody class="js-body"></tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+
+		<div class="row py-5 js-wrapper">
+			<div class="col-12 col-lg-5 offset-lg-1">
+				<h2 class="my-5">
+					<a href="https://github.com/19h47/19h47-calendar">Calendar <sup class="js-calendar-value"></sup></a>
+				</h2>
+
+				<p>Instanciate a calendar with already picked dates</p>
+			</div>
+			<div class="col-12 col-lg-10 offset-lg-1">
+				<div class="Calendar js-calendar" data-year="2023" data-month="10" data-flight-count="true" data-picked-dates="[1699138800000,1699311600000]" data-allow-past="true" data-single="false">
+
+					<header class="Calendar__header btn-group d-flex">
+						<button class="Calendar__previous btn btn-outline-primary w-100 js-previous" type="button">
+							Previous Month
+						</button>
+						<button type="button" class="Calendar__title btn btn-outline-primary w-100 js-title">
+							01
+						</button>
+						<button class="Calendar__next btn btn-outline-primary w-100 js-next" type="button">
+							Next Month
+						</button>
+					</header>
+
 					<table class="Calendar__table table mt-5" role="grid">
 						<thead class="Calendar__days">
 							<tr class="Calendar__row">
@@ -1224,6 +1306,7 @@
 
 			const calendar = new Calendar($calendar, {
 				single: $calendar.getAttribute('data-single') === 'true',
+				allowPast: $calendar.getAttribute('data-allow-past') === 'true',
 				deselect: true,
 				firstDay,
 			});

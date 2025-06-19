@@ -22,7 +22,7 @@ interface CalendarStateClasses {
 
 const stateClasses = {
 	active: "active",
-	range: "active",
+	range: "range",
 	start: "start",
 	end: "end",
 	name: "calendar",
@@ -57,6 +57,7 @@ const optionsDefault = {
 	stateClasses,
 	months: months[lang],
 	deselect: false,
+	allowPast: false,
 };
 
 interface CalendarOptions {
@@ -66,6 +67,7 @@ interface CalendarOptions {
 	months: string[];
 	deselect?: boolean;
 	name?: string;
+	allowPast?: boolean;
 }
 
 interface CalendarCurrent {
@@ -102,8 +104,8 @@ export default class Calendar {
 
 		this.current = {
 			date: this.today.getDate(),
-			month: this.today.getMonth(),
-			year: this.today.getFullYear(),
+			month: JSON.parse(this.el.getAttribute('data-month') || this.today.getMonth().toString()),
+			year: JSON.parse(this.el.getAttribute('data-year') || this.today.getFullYear().toString()),
 		};
 
 		// UI
@@ -118,7 +120,7 @@ export default class Calendar {
 
 	init() {
 		this.active = [];
-		this.picked = [];
+		this.picked = JSON.parse(this.el.getAttribute('data-picked-dates') || '[]' );
 
 		this.onMousemove = this.onMousemove.bind(this);
 		this.onKeydown = this.onKeydown.bind(this);
@@ -382,8 +384,13 @@ export default class Calendar {
 
 					inner.innerHTML = day.toString();
 
-					// Active futur date
-					if (date.getTime() > this.today.getTime()) {
+
+
+					// Active future date (respect allowPast option)
+					if (
+						(this.options.allowPast && date.getTime() !== this.today.getTime()) ||
+						date.getTime() > this.today.getTime()
+					) {
 						inner.innerHTML = button(date.getTime(), day);
 						cell.classList.add(tableClasses.CELL_ACTIVE);
 					}
