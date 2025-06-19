@@ -385,7 +385,6 @@ export default class Calendar {
 					inner.innerHTML = day.toString();
 
 
-
 					// Active future date (respect allowPast option)
 					if (
 						(this.options.allowPast && date.getTime() !== this.today.getTime()) ||
@@ -423,6 +422,20 @@ export default class Calendar {
 								this.options.stateClasses.active
 							);
 							this.active.push($button);
+
+							// Add start and end classes
+							if (
+								this.picked.length > 0 &&
+								date.getTime() === this.picked[0]
+							) {
+								$button.classList.add(this.options.stateClasses.start);
+							}
+							if (
+								this.picked.length > 1 &&
+								date.getTime() === this.picked[this.picked.length - 1]
+							) {
+								$button.classList.add(this.options.stateClasses.end);
+							}
 						}
 					}
 

@@ -1,12 +1,12 @@
-function f(n, e) {
-  return 32 - new Date(n, e, 32).getDate();
+function m(r, e) {
+  return 32 - new Date(r, e, 32).getDate();
 }
-function m(n, e, t = 0) {
-  const s = new Date(e, n).getDay();
+function y(r, e, t = 0) {
+  const s = new Date(e, r).getDay();
   return t === 1 && s === 0 ? 7 : s;
 }
-function p(n, e, t) {
-  return n <= t && n >= e;
+function p(r, e, t) {
+  return r <= t && r >= e;
 }
 const v = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"], b = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"], L = ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"], C = {
   fr: v,
@@ -24,12 +24,12 @@ const v = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Ao
   start: "start",
   end: "end",
   name: "calendar"
-}, g = (n, e) => `
-	<button class="btn btn-outline-primary js-button" data-date="${n}" type="button">
+}, g = (r, e) => `
+	<button class="btn btn-outline-primary js-button" data-date="${r}" type="button">
 		${e}
 	</button>
-`, u = (n, e, t) => {
-  n.dispatchEvent(
+`, u = (r, e, t) => {
+  r.dispatchEvent(
     new CustomEvent("Calendar.change", {
       detail: {
         values: e,
@@ -37,7 +37,7 @@ const v = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Ao
       }
     })
   );
-}, E = document.documentElement.getAttribute("lang") || "en", y = {
+}, E = document.documentElement.getAttribute("lang") || "en", f = {
   single: !0,
   firstDay: 0,
   stateClasses: k,
@@ -47,7 +47,7 @@ const v = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Ao
 };
 class A {
   constructor(e, t = {}) {
-    this.options = y, this.active = [], this.el = e, this.today = /* @__PURE__ */ new Date(), this.options = { ...y, ...t }, this.current = {
+    this.options = f, this.active = [], this.el = e, this.today = /* @__PURE__ */ new Date(), this.options = { ...f, ...t }, this.current = {
       date: this.today.getDate(),
       month: JSON.parse(this.el.getAttribute("data-month") || this.today.getMonth().toString()),
       year: JSON.parse(this.el.getAttribute("data-year") || this.today.getFullYear().toString())
@@ -96,9 +96,9 @@ class A {
           const s = [
             ...this.$body.querySelectorAll(".js-button")
           ];
-          return 1 < this.picked.length && (s.map((a) => (a.classList.remove(
+          return 1 < this.picked.length && (s.map((n) => (n.classList.remove(
             this.options.stateClasses.active
-          ), a.classList.remove(
+          ), n.classList.remove(
             this.options.stateClasses.range
           ), !0)), this.active = [], this.picked = [], this.el.setAttribute(
             "data-picked-dates",
@@ -119,36 +119,36 @@ class A {
     }), this.$title && this.$title.addEventListener("keydown", this.onKeydown, !1), this.options.single || this.$body.addEventListener("mousemove", this.onMousemove, !1);
   }
   onKeydown(e) {
-    const { key: t, code: s } = e, a = () => {
+    const { key: t, code: s } = e, n = () => {
       e.preventDefault(), this.next();
     }, i = () => {
       e.preventDefault(), this.previous();
     }, h = {
       ArrowUp: i,
       ArrowLeft: i,
-      ArrowDown: a,
-      ArrowRight: a,
+      ArrowDown: n,
+      ArrowRight: n,
       default: () => !1
     };
     return (h[t || s] || h.default)();
   }
   onMousemove(e) {
     const { target: t } = e, s = this.$body.querySelectorAll(".js-button");
-    let a = !1;
+    let n = !1;
     if (!t.matches(".js-button") || this.picked.length === 0 || this.picked.length === 2)
       return;
     const i = this.$body.querySelector(
       `[data-date="${this.picked[0]}"]`
     );
-    let h = parseInt(this.picked[0].toString(), 10), r = parseInt(t.getAttribute("data-date"), 10);
-    h > r && (a = !0, r = parseInt(this.picked[0].toString(), 10), h = parseInt(t.getAttribute("data-date"), 10)), s.forEach((o) => {
+    let h = parseInt(this.picked[0].toString(), 10), a = parseInt(t.getAttribute("data-date"), 10);
+    h > a && (n = !0, a = parseInt(this.picked[0].toString(), 10), h = parseInt(t.getAttribute("data-date"), 10)), s.forEach((o) => {
       const d = parseInt(o.getAttribute("data-date") || "0", 10);
       o.classList.remove(
         this.options.stateClasses.range,
         this.options.stateClasses.end,
         this.options.stateClasses.start
-      ), p(d, h, r) && o.classList.add(this.options.stateClasses.range);
-    }), i && i.classList.add(this.options.stateClasses.start), t.classList.add(this.options.stateClasses.end), a && (i && (i.classList.add(this.options.stateClasses.end), i.classList.remove(this.options.stateClasses.start)), t.classList.add(this.options.stateClasses.start), t.classList.remove(this.options.stateClasses.end));
+      ), p(d, h, a) && o.classList.add(this.options.stateClasses.range);
+    }), i && i.classList.add(this.options.stateClasses.start), t.classList.add(this.options.stateClasses.end), n && (i && (i.classList.add(this.options.stateClasses.end), i.classList.remove(this.options.stateClasses.start)), t.classList.add(this.options.stateClasses.start), t.classList.remove(this.options.stateClasses.end));
   }
   // onMouseLeave() {}
   renderHeader(e, t) {
@@ -162,24 +162,24 @@ class A {
   }
   renderCalendar(e, t) {
     let s = 1;
-    for (let a = 0; 6 >= a; a += 1) {
+    for (let n = 0; 6 >= n; n += 1) {
       const i = document.createElement("tr");
       i.classList.add(l.ROW);
       for (let h = this.options.firstDay; h < 7 + this.options.firstDay; h += 1) {
-        const r = new Date(t, e, s), o = document.createElement("td"), d = document.createElement("div");
-        if (a === 0 && h < m(e, t, this.options.firstDay))
+        const a = new Date(t, e, s), o = document.createElement("td"), d = document.createElement("div");
+        if (n === 0 && h < y(e, t, this.options.firstDay))
           i.appendChild(o);
         else {
-          if (s > f(t, e))
+          if (s > m(t, e))
             break;
-          if (o.classList.add(l.CELL), d.innerHTML = s.toString(), (this.options.allowPast && r.getTime() !== this.today.getTime() || r.getTime() > this.today.getTime()) && (d.innerHTML = g(r.getTime(), s), o.classList.add(l.CELL_ACTIVE)), s === this.today.getDate() && t === this.today.getFullYear() && e === this.today.getMonth() && o.classList.add(l.CELL_CURRENT), s === this.today.getDate() && t === this.today.getFullYear() && e === this.today.getMonth() && (d.innerHTML = g(r.getTime(), s), o.classList.add(l.CELL_ACTIVE)), this.picked.includes(r.getTime())) {
+          if (o.classList.add(l.CELL), d.innerHTML = s.toString(), (this.options.allowPast && a.getTime() !== this.today.getTime() || a.getTime() > this.today.getTime()) && (d.innerHTML = g(a.getTime(), s), o.classList.add(l.CELL_ACTIVE)), s === this.today.getDate() && t === this.today.getFullYear() && e === this.today.getMonth() && o.classList.add(l.CELL_CURRENT), s === this.today.getDate() && t === this.today.getFullYear() && e === this.today.getMonth() && (d.innerHTML = g(a.getTime(), s), o.classList.add(l.CELL_ACTIVE)), this.picked.includes(a.getTime())) {
             const c = d.querySelector("button");
             c && (c.classList.add(
               this.options.stateClasses.active
-            ), this.active.push(c));
+            ), this.active.push(c), this.picked.length > 0 && a.getTime() === this.picked[0] && c.classList.add(this.options.stateClasses.start), this.picked.length > 1 && a.getTime() === this.picked[this.picked.length - 1] && c.classList.add(this.options.stateClasses.end));
           }
           if (!this.options.single && this.picked.length !== 0 && p(
-            r,
+            a,
             new Date(this.picked[0]),
             new Date(this.picked[1])
           )) {
@@ -188,7 +188,7 @@ class A {
               this.options.stateClasses.range
             );
           }
-          this.renderInner(d, r), d.classList.add(l.CELL_INNER), o.appendChild(d), i.appendChild(o), s += 1;
+          this.renderInner(d, a), d.classList.add(l.CELL_INNER), o.appendChild(d), i.appendChild(o), s += 1;
         }
       }
       i.innerHTML.length !== 0 && this.$body.appendChild(i);
