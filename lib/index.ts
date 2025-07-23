@@ -3,6 +3,7 @@ import getFirstDay from "./utils/getFirstDay";
 import isBetween from "./utils/isBetween";
 
 import months from "./../languages/months.json";
+import formats from "./../languages/formats.json";
 
 const tableClasses = {
 	ROW: "Calendar__row",
@@ -50,6 +51,7 @@ const dispatchChangeEvent = (
 };
 
 const lang = document.documentElement.getAttribute("lang") || "en";
+const format = formats[lang] || formats['en'];
 
 const optionsDefault = {
 	single: true,
@@ -104,8 +106,14 @@ export default class Calendar {
 
 		this.current = {
 			date: this.today.getDate(),
-			month: JSON.parse(this.el.getAttribute('data-month') || this.today.getMonth().toString()),
-			year: JSON.parse(this.el.getAttribute('data-year') || this.today.getFullYear().toString()),
+			month: JSON.parse(
+				this.el.getAttribute("data-month") ||
+					this.today.getMonth().toString()
+			),
+			year: JSON.parse(
+				this.el.getAttribute("data-year") ||
+					this.today.getFullYear().toString()
+			),
 		};
 
 		// UI
@@ -120,7 +128,9 @@ export default class Calendar {
 
 	init() {
 		this.active = [];
-		this.picked = JSON.parse(this.el.getAttribute('data-picked-dates') || '[]' );
+		this.picked = JSON.parse(
+			this.el.getAttribute("data-picked-dates") || "[]"
+		);
 
 		this.onMousemove = this.onMousemove.bind(this);
 		this.onKeydown = this.onKeydown.bind(this);
@@ -337,7 +347,11 @@ export default class Calendar {
 
 	renderHeader(month, year) {
 		if (this.$title) {
-			this.$title.innerHTML = `${this.options.months[month]} ${year}`;
+			const date = new Date(year, month, 1);
+			this.$title.innerHTML = date.toLocaleDateString(lang, {
+				month: format.month,
+				year: format.year,
+			});
 		}
 
 		this.$previous &&
@@ -384,10 +398,10 @@ export default class Calendar {
 
 					inner.innerHTML = day.toString();
 
-
 					// Active future date (respect allowPast option)
 					if (
-						(this.options.allowPast && date.getTime() !== this.today.getTime()) ||
+						(this.options.allowPast &&
+							date.getTime() !== this.today.getTime()) ||
 						date.getTime() > this.today.getTime()
 					) {
 						inner.innerHTML = button(date.getTime(), day);
@@ -428,13 +442,18 @@ export default class Calendar {
 								this.picked.length > 0 &&
 								date.getTime() === this.picked[0]
 							) {
-								$button.classList.add(this.options.stateClasses.start);
+								$button.classList.add(
+									this.options.stateClasses.start
+								);
 							}
 							if (
 								this.picked.length > 1 &&
-								date.getTime() === this.picked[this.picked.length - 1]
+								date.getTime() ===
+									this.picked[this.picked.length - 1]
 							) {
-								$button.classList.add(this.options.stateClasses.end);
+								$button.classList.add(
+									this.options.stateClasses.end
+								);
 							}
 						}
 					}
