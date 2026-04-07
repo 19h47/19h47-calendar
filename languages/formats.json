@@ -1,0 +1,14 @@
+{
+	"fr": {
+		"year": "numeric",
+		"month": "long"
+	},
+	"en": {
+		"year": "numeric",
+		"month": "long"
+	},
+	"ja": {
+		"year": "numeric",
+		"month": "numeric"
+	}
+}
