@@ -1,34 +1,194 @@
 # @19h47/calendar
 
+Lightweight date / range picker. Markup and CSS are yours — the package fills the grid and handles selection.
+
 ## Installation
 
+```bash
+pnpm add @19h47/calendar
 ```
-yarn add @19h47/calendar
+
+## Markup
+
+Required hooks:
+
+| Selector | Role |
+| -------- | ---- |
+| Root element | Passed to `new Calendar(el, options)` |
+| `.js-previous` / `.js-next` | Month navigation (optional) |
+| `.js-title` | Month / year label; click advances to the next month (same as `.js-next`) |
+| `.js-days` | Weekday headers row |
+| `.js-body` | Day cells |
+| `.js-day` | Day button (generated) |
+
+```html
+<div class="Calendar js-calendar">
+	<header>
+		<button type="button" class="js-previous">Previous</button>
+		<button type="button" class="js-title" id="calendar-label" aria-live="polite"></button>
+		<button type="button" class="js-next">Next</button>
+	</header>
+	<table role="grid" aria-labelledby="calendar-label">
+		<thead>
+			<tr class="js-days"></tr>
+		</thead>
+		<tbody class="js-body"></tbody>
+	</table>
+</div>
 ```
 
 ## Usage
 
+```ts
+import Calendar, { type Options } from "@19h47/calendar";
+
+const el = document.querySelector(".js-calendar") as HTMLElement;
+const options: Partial<Options> = {
+	locale: "fr",
+	deselect: true,
+	buttonClass: "btn btn-outline-primary", // optional — lib ships unstyled buttons
+};
+
+const calendar = new Calendar(el, options);
+calendar.init();
+
+el.addEventListener("Calendar.change", ({ detail }) => {
+	// detail.values → string[] (`YYYY-MM-DD`)
+	console.log(detail.values);
+});
+```
+
+`destroy()` detaches listeners and clears the grid.
+
+### Single date
+
+```js
+new Calendar(el, { single: true, deselect: true }).init();
+```
+
+### Date range
+
+```js
+new Calendar(el, { single: false }).init();
+```
+
+### Locale & week start
+
+`locale` drives labels via `Intl`. Week start defaults from the locale (`weekInfo`); pass `firstDay` to override.
+
+```js
+new Calendar(el, { locale: "fr" }).init();
+// fr → week starts Monday
+
+new Calendar(el, { locale: "en", firstDay: 1 }).init();
+// force Monday despite en
+```
+
+Update at runtime:
+
+```js
+import Calendar, { getWeekStart } from "@19h47/calendar";
+
+calendar.options.locale = "ja";
+calendar.options.firstDay = getWeekStart("ja");
+calendar.render();
+```
+
+### Custom labels
+
+```js
+new Calendar(el, {
+	locale: "fr",
+	days: ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"],
+	months: [
+		"Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
+		"Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre",
+	],
+}).init();
+```
+
+### Cell hook
+
+Override `renderInner` to enrich or rebuild each day cell. Keep `.js-day` and `data-day`.
+
+```js
+calendar.renderInner = (inner, date) => {
+	const button = inner.querySelector(".js-day");
+	if (!button) return;
+
+	button.classList.add("MyDay");
+	button.innerHTML = `<time datetime="${date.toISOString().slice(0, 10)}">${date.getDate()}</time>`;
+};
+```
+
+Pair with custom `stateClasses` / header markup — see the **Custom markup** demo in `index.html`.
+
 ## Options
 
-| Option    | Type     | Default | Description                                                      |
-| --------- | -------- | ------- | ---------------------------------------------------------------- |
-| single    | Boolean  | true    | Choose a single date instead of a date range.                    |
-| firstDay  | Number   | 0       | Day of start week. (0 - Sunday, 1 - Monday, 2 - Tuesday, etc...) |
-| deselect  | Boolean  | false   | In single mode, does date is deselectable?                       |
-| allowPast | Boolean  | false   | Allow to select past dates.                                      |
+| Option | Type | Default | Description |
+| ------ | ---- | ------- | ----------- |
+| `locale` | `string` | `document.documentElement.lang` or `"en"` | BCP 47 locale for title and weekday/month labels |
+| `buttonClass` | `string` | `""` | Extra classes on day buttons (e.g. Bootstrap) |
+| `months` | `string[]` | — | Month names override (Jan→Dec). Defaults to `Intl` |
+| `days` | `string[]` | — | Weekday labels override (Sun→Sat). Defaults to `Intl` |
+| `single` | `boolean` | `true` | Single date vs range |
+| `firstDay` | `number` | from locale | Week start (`0`=Sun … `6`=Sat) |
+| `deselect` | `boolean` | `false` | Allow clearing the selection in single mode |
+| `allowPast` | `boolean` | `false` | Allow selecting past dates |
+| `name` | `string` | — | Forwarded in `Calendar.change` detail |
+| `stateClasses` | `object` | see source | Selection classes (`active`, `range`, `start`, `end`) |
+
+Exported types: `Options`, `StateClasses`, `Current`. Also exported: `getWeekStart`, `toDayString`, `fromDayString`.
 
 ## Attributes
 
-| Attribute         | Type   | Default | Description                                                               |
-| ----------------- | ------ | ------- | ------------------------------------------------------------------------- |
-| data-month        | String | -       | Month to display, in format `MM`. If not set, current month is displayed. |
-| data-year         | String | -       | Year to display, in format `YYYY`. If not set, current year is displayed. |
-| data-picked-dates | String | -       | Comma separated list of dates to preselect, in format `YYYY-MM-DD`.       |
+| Attribute | Description |
+| --------- | ----------- |
+| `data-month` | Initial month (`0`–`11`) |
+| `data-year` | Initial year |
+| `data-picked-dates` | JSON array of `YYYY-MM-DD` days to preselect, e.g. `["2023-11-05","2023-11-07"]` |
 
-## Example
+## Accessibility
 
-An example is located right [here](https://19h47.github.io/19h47-calendar/), see [sources](/docs/index.html).
+The calendar grid follows the [WAI-ARIA APG date grid](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/examples/datepicker-dialog/) practices.
+
+**In your markup (source of truth):** `role="grid"`, `aria-labelledby`, `aria-live` on the title, `aria-label` on nav buttons, etc.
+
+**Generated by the lib:**
+
+- Roving `tabindex` (one focusable day at a time)
+- `aria-selected` on selected days
+- `aria-disabled` on unavailable days (still in the keyboard grid)
+- `aria-current="date"` on today
+- Weekday headers with `abbr` (full day name)
+
+### Keyboard (focus in the grid)
+
+| Key | Action |
+| --- | --- |
+| Arrow keys | Move by day / week (crosses months) |
+| Home / End | First / last day of the week |
+| Page Up / Page Down | Previous / next month (same day number, or last day of month) |
+| Shift + Page Up / Down | Previous / next year |
+| Enter / Space | Select the focused day |
+
+## Events
+
+`Calendar.change` — fired on selection change.
+
+```ts
+detail: {
+	values: string[]; // `YYYY-MM-DD`
+	name?: string;
+}
+```
+
+## Live demos
+
+- [GitHub Pages](https://19h47.github.io/19h47-calendar/)
+- Local: `pnpm dev` then open the app (see `index.html`)
 
 ## Acknowledgments
 
--   [Litepicker](https://github.com/wakirin/Litepicker)
+- [Litepicker](https://github.com/wakirin/Litepicker)
+- [WAI-ARIA APG — Date Picker Dialog](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/examples/datepicker-dialog/)

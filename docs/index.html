@@ -4,27 +4,205 @@
 <head>
 	<meta charset="UTF-8" />
 	<title>Calendar</title>
-	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" />
+	<link
+		rel="stylesheet"
+		href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+	/>
 	<style>
 		.Calendar__table {
 			table-layout: fixed;
 			word-wrap: break-word;
 		}
 
-		.Calendar__cell__inner {
+		.Calendar__table td > div {
 			text-align: center;
 		}
 
-		.Calendar__cell.Calendar__cell--current .btn {
+		.Calendar__table .js-day[aria-current="date"] {
 			border-color: red;
 		}
 
-		.Calendar__row th {
+		.Calendar__days th {
 			text-align: center;
 		}
 
-		.btn.range {
+		.js-day.range {
 			background-color: rgba(0, 123, 255, 0.2);
+		}
+
+		.btn.js-day.start,
+		.btn.js-day.end {
+			color: #fff;
+			background-color: var(--bs-primary);
+			border-color: var(--bs-primary);
+		}
+
+		.btn.js-day.start:hover,
+		.btn.js-day.end:hover {
+			color: #fff;
+			background-color: var(--bs-primary);
+			border-color: var(--bs-primary);
+		}
+
+		.js-day[aria-disabled="true"] {
+			opacity: 0.45;
+			cursor: default;
+		}
+
+		.btn.js-day[aria-disabled="true"]:hover {
+			color: var(--bs-btn-color);
+			background-color: var(--bs-btn-bg);
+			border-color: var(--bs-btn-border-color);
+			box-shadow: none;
+		}
+
+		.js-day:focus-visible {
+			outline: 2px solid currentColor;
+			outline-offset: 2px;
+		}
+
+		.lang-picker {
+			display: flex;
+			gap: 0.5rem;
+			align-items: center;
+		}
+
+		/* Custom markup demo — no Bootstrap chrome */
+		.Shell {
+			max-width: 22rem;
+			padding: 1.25rem;
+			border: 1px solid #d8d2c8;
+			background:
+				linear-gradient(160deg, #faf7f2 0%, #f3eee6 100%);
+			font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+			color: #2c261e;
+		}
+
+		.Shell__nav {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 0.75rem;
+			margin-bottom: 1rem;
+		}
+
+		.Shell__title {
+			margin: 0;
+			flex: 1;
+			text-align: center;
+			font-size: 1.1rem;
+			font-weight: 600;
+			letter-spacing: 0.02em;
+		}
+
+		.Shell__nav-btn {
+			width: 2rem;
+			height: 2rem;
+			border: 1px solid #2c261e;
+			background: transparent;
+			color: inherit;
+			font-size: 1.25rem;
+			line-height: 1;
+			cursor: pointer;
+		}
+
+		.Shell__nav-btn:hover {
+			background: #2c261e;
+			color: #faf7f2;
+		}
+
+		.Shell__grid {
+			width: 100%;
+			border-collapse: collapse;
+			table-layout: fixed;
+		}
+
+		.Shell__grid th {
+			padding: 0.35rem 0;
+			font-size: 0.7rem;
+			font-weight: 600;
+			text-transform: uppercase;
+			letter-spacing: 0.06em;
+			color: #7a7166;
+			text-align: center;
+		}
+
+		.Shell__grid td {
+			padding: 0.15rem;
+			text-align: center;
+			vertical-align: middle;
+		}
+
+		.Shell__grid td > div {
+			min-height: 2.25rem;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 0.85rem;
+			color: #a39a8e;
+		}
+
+		.Shell__day[aria-current="date"] {
+			box-shadow: inset 0 0 0 1px #2c261e;
+		}
+
+		.Shell__day {
+			width: 2.25rem;
+			height: 2.25rem;
+			border: 0;
+			border-radius: 999px;
+			background: transparent;
+			color: #2c261e;
+			font: inherit;
+			font-size: 0.9rem;
+			cursor: pointer;
+		}
+
+		.Shell__day:hover:not([aria-disabled="true"]):not(.is-selected) {
+			background: rgba(44, 38, 30, 0.08);
+			color: #2c261e;
+		}
+
+		.Shell__day[aria-disabled="true"] {
+			opacity: 0.45;
+			cursor: default;
+			color: #a39a8e;
+		}
+
+		.Shell__day.is-selected {
+			background: #2c261e;
+			color: #faf7f2;
+		}
+
+		.Shell__day.is-selected:hover {
+			background: #2c261e;
+			color: #faf7f2;
+		}
+
+		.Shell__day.is-in-range {
+			background: rgba(44, 38, 30, 0.1);
+			color: #2c261e;
+		}
+
+		.Shell__day.is-in-range:hover {
+			background: rgba(44, 38, 30, 0.16);
+			color: #2c261e;
+		}
+
+		.Shell__day.is-start,
+		.Shell__day.is-end {
+			background: #2c261e;
+			color: #faf7f2;
+		}
+
+		.Shell__day.is-start:hover,
+		.Shell__day.is-end:hover {
+			background: #2c261e;
+			color: #faf7f2;
+		}
+
+		.Shell__day time {
+			font-variant-numeric: tabular-nums;
 		}
 	</style>
 </head>
@@ -32,16 +210,28 @@
 <body>
 	<div class="container-fluid">
 		<div class="row py-5">
-			<div class="col-12 col-lg-10 offset-lg-1">
+			<div class="col-12 col-lg-10 offset-lg-1 d-flex justify-content-between align-items-center flex-wrap">
 				<h1 class="my-5">
-					<a href="https://github.com/19h47/19h47-calendar">Calendar </a>
+					<a href="https://github.com/19h47/19h47-calendar">@19h47/calendar</a>
 				</h1>
+				<div class="lang-picker mb-3" role="group" aria-label="Language">
+					<span class="text-muted me-2">lang</span>
+					<div class="btn-group" role="group">
+						<button type="button" class="btn btn-outline-secondary js-lang" data-lang="en" aria-pressed="true">en</button>
+						<button type="button" class="btn btn-outline-secondary js-lang" data-lang="fr" aria-pressed="false">fr</button>
+						<button type="button" class="btn btn-outline-secondary js-lang" data-lang="ja" aria-pressed="false">ja</button>
+					</div>
+				</div>
+			</div>
+			<div class="col-12 col-lg-10 offset-lg-1">
+				<p class="lead text-muted">Interactive examples of the calendar package. Each section documents a different option combination.</p>
 			</div>
 		</div>
 
 		<div class="row py-5 js-wrapper">
 			<div class="col-12 col-lg-10 offset-lg-1">
-				<h2 class="my-5">Calendar <sup class="js-calendar-value"></sup></h2>
+				<h2 class="h4 mb-2">Single date <sup class="js-calendar-value fw-normal text-muted"></sup></h2>
+				<p class="text-muted mb-4">Default mode (<code>single: true</code>). Past dates are disabled. Use the lang picker above to switch locale and week start.</p>
 			</div>
 			<div class="col-12 col-lg-10 offset-lg-1">
 				<div class="Calendar js-calendar" data-flight-count="true" data-picked-dates="[]">
@@ -59,15 +249,7 @@
 
 					<table class="Calendar__table table mt-5" role="grid">
 						<thead class="Calendar__days">
-							<tr class="Calendar__row">
-								<th scope="col" abbr="Sunday">Sun.</th>
-								<th scope="col" abbr="Monday">Mo.</th>
-								<th scope="col" abbr="Tuesday">Tu.</th>
-								<th scope="col" abbr="Wednesday">We.</th>
-								<th scope="col" abbr="Thursday">Th.</th>
-								<th scope="col" abbr="Friday">Fr.</th>
-								<th scope="col" abbr="Saturday">Sa.</th>
-							</tr>
+							<tr class="js-days"></tr>
 						</thead>
 
 						<tbody class="js-body"></tbody>
@@ -78,10 +260,11 @@
 
 		<div class="row py-5 js-wrapper">
 			<div class="col-12 col-lg-10 offset-lg-1">
-				<h2 class="my-5">Calendrier <sup class="js-calendar-value"></sup></h2>
+				<h2 class="h4 mb-2">Single date + deselect <sup class="js-calendar-value fw-normal text-muted"></sup></h2>
+				<p class="text-muted mb-4"><code>deselect: true</code> — click the selected day again to clear it. French chrome labels (locale still follows the picker).</p>
 			</div>
 			<div class="col-12 col-lg-10 offset-lg-1">
-				<div class="Calendar js-calendar" data-flight-count="true" data-picked-dates="[]" data-first-day="1">
+				<div class="Calendar js-calendar" data-flight-count="true" data-picked-dates="[]" data-deselect="true">
 					<header class="Calendar__header btn-group d-flex">
 						<button class="Calendar__previous btn btn-outline-primary w-100 js-previous" type="button">
 							Mois précédent
@@ -96,15 +279,7 @@
 
 					<table class="Calendar__table table mt-5" role="grid">
 						<thead class="Calendar__days">
-							<tr class="Calendar__row">
-								<th scope="col" abbr="Lundi">Lun.</th>
-								<th scope="col" abbr="Mardi">Mar.</th>
-								<th scope="col" abbr="Mercredi">Mer.</th>
-								<th scope="col" abbr="Jeudi">Jeu.</th>
-								<th scope="col" abbr="Vendredi">Ven.</th>
-								<th scope="col" abbr="Samedi">Sam.</th>
-								<th scope="col" abbr="Dimanche">Dim.</th>
-							</tr>
+							<tr class="js-days"></tr>
 						</thead>
 
 						<tbody class="js-body"></tbody>
@@ -114,49 +289,9 @@
 		</div>
 
 		<div class="row py-5 js-wrapper">
-			<div class="col-12 col-lg-5 offset-lg-1">
-				<h2 class="my-5">
-					<a href="https://github.com/19h47/19h47-calendar">Calendar <sup class="js-calendar-value"></sup></a>
-				</h2>
-			</div>
 			<div class="col-12 col-lg-10 offset-lg-1">
-				<div class="Calendar js-calendar" data-flight-count="true" data-picked-dates="[]">
-					<header class="Calendar__header btn-group d-flex">
-						<button class="Calendar__previous btn btn-outline-primary w-100 js-previous" type="button">
-							Previous Month
-						</button>
-						<button type="button" class="Calendar__title btn btn-outline-primary w-100 js-title">
-							01
-						</button>
-						<button class="Calendar__next btn btn-outline-primary w-100 js-next" type="button">
-							Next Month
-						</button>
-					</header>
-
-					<table class="Calendar__table table mt-5" role="grid">
-						<thead class="Calendar__days">
-							<tr class="Calendar__row">
-								<th scope="col" abbr="Sunday">Sun.</th>
-								<th scope="col" abbr="Monday">Mo.</th>
-								<th scope="col" abbr="Tuesday">Tu.</th>
-								<th scope="col" abbr="Wednesday">We.</th>
-								<th scope="col" abbr="Thursday">Th.</th>
-								<th scope="col" abbr="Friday">Fr.</th>
-								<th scope="col" abbr="Saturday">Sa.</th>
-							</tr>
-						</thead>
-
-						<tbody class="js-body"></tbody>
-					</table>
-				</div>
-			</div>
-		</div>
-
-		<div class="row py-5 js-wrapper">
-			<div class="col-12 col-lg-5 offset-lg-1">
-				<h2 class="my-5">
-					<a href="https://github.com/19h47/19h47-calendar">Calendar <sup class="js-calendar-value"></sup></a>
-				</h2>
+				<h2 class="h4 mb-2">Date range <sup class="js-calendar-value fw-normal text-muted"></sup></h2>
+				<p class="text-muted mb-4"><code>single: false</code> — pick a start and an end. Hover highlights the range between the two clicks.</p>
 			</div>
 			<div class="col-12 col-lg-10 offset-lg-1">
 				<div class="Calendar js-calendar" data-flight-count="true" data-picked-dates="[]" data-single="false">
@@ -174,15 +309,7 @@
 
 					<table class="Calendar__table table mt-5" role="grid">
 						<thead class="Calendar__days">
-							<tr class="Calendar__row">
-								<th scope="col" abbr="Sunday">Sun.</th>
-								<th scope="col" abbr="Monday">Mo.</th>
-								<th scope="col" abbr="Tuesday">Tu.</th>
-								<th scope="col" abbr="Wednesday">We.</th>
-								<th scope="col" abbr="Thursday">Th.</th>
-								<th scope="col" abbr="Friday">Fr.</th>
-								<th scope="col" abbr="Saturday">Sa.</th>
-							</tr>
+							<tr class="js-days"></tr>
 						</thead>
 
 						<tbody class="js-body"></tbody>
@@ -192,24 +319,15 @@
 		</div>
 
 		<div class="row py-5 js-wrapper">
-			<div class="col-12 col-lg-5 offset-lg-1">
-				<h2 class="my-5">
-					<a href="https://github.com/19h47/19h47-calendar">Calendar <sup class="js-calendar-value"></sup></a>
-				</h2>
+			<div class="col-12 col-lg-10 offset-lg-1">
+				<h2 class="h4 mb-2">Range without header <sup class="js-calendar-value fw-normal text-muted"></sup></h2>
+				<p class="text-muted mb-4">Navigation controls are optional — only the grid is required (<code>.js-body</code> + <code>.js-days</code>).</p>
 			</div>
 			<div class="col-12 col-lg-10 offset-lg-1">
 				<div class="Calendar js-calendar" data-flight-count="true" data-picked-dates="[]" data-single="false">
 					<table class="Calendar__table table mt-5" role="grid">
 						<thead class="Calendar__days">
-							<tr class="Calendar__row">
-								<th scope="col" abbr="Sunday">Sun.</th>
-								<th scope="col" abbr="Monday">Mo.</th>
-								<th scope="col" abbr="Tuesday">Tu.</th>
-								<th scope="col" abbr="Wednesday">We.</th>
-								<th scope="col" abbr="Thursday">Th.</th>
-								<th scope="col" abbr="Friday">Fr.</th>
-								<th scope="col" abbr="Saturday">Sa.</th>
-							</tr>
+							<tr class="js-days"></tr>
 						</thead>
 
 						<tbody class="js-body"></tbody>
@@ -219,10 +337,9 @@
 		</div>
 
 		<div class="row py-5 js-wrapper">
-			<div class="col-12 col-lg-5 offset-lg-1">
-				<h2 class="my-5">
-					<a href="https://github.com/19h47/19h47-calendar">Calendar <sup class="js-calendar-value"></sup></a>
-				</h2>
+			<div class="col-12 col-lg-10 offset-lg-1">
+				<h2 class="h4 mb-2">Allow past dates <sup class="js-calendar-value fw-normal text-muted"></sup></h2>
+				<p class="text-muted mb-4"><code>allowPast: true</code> — days before today become selectable (range mode).</p>
 			</div>
 			<div class="col-12 col-lg-10 offset-lg-1">
 				<div class="Calendar js-calendar" data-flight-count="true" data-picked-dates="[]" data-allow-past="true" data-single="false">
@@ -241,15 +358,7 @@
 
 					<table class="Calendar__table table mt-5" role="grid">
 						<thead class="Calendar__days">
-							<tr class="Calendar__row">
-								<th scope="col" abbr="Sunday">Sun.</th>
-								<th scope="col" abbr="Monday">Mo.</th>
-								<th scope="col" abbr="Tuesday">Tu.</th>
-								<th scope="col" abbr="Wednesday">We.</th>
-								<th scope="col" abbr="Thursday">Th.</th>
-								<th scope="col" abbr="Friday">Fr.</th>
-								<th scope="col" abbr="Saturday">Sa.</th>
-							</tr>
+							<tr class="js-days"></tr>
 						</thead>
 
 						<tbody class="js-body"></tbody>
@@ -259,15 +368,12 @@
 		</div>
 
 		<div class="row py-5 js-wrapper">
-			<div class="col-12 col-lg-5 offset-lg-1">
-				<h2 class="my-5">
-					<a href="https://github.com/19h47/19h47-calendar">Calendar <sup class="js-calendar-value"></sup></a>
-				</h2>
-
-				<p>Instanciate a calendar with already picked dates</p>
+			<div class="col-12 col-lg-10 offset-lg-1">
+				<h2 class="h4 mb-2">Preselected range <sup class="js-calendar-value fw-normal text-muted"></sup></h2>
+				<p class="text-muted mb-4">Initial view via <code>data-year</code> / <code>data-month</code>, selection via <code>data-picked-dates</code> (JSON <code>YYYY-MM-DD</code> days).</p>
 			</div>
 			<div class="col-12 col-lg-10 offset-lg-1">
-				<div class="Calendar js-calendar" data-year="2023" data-month="10" data-flight-count="true" data-picked-dates="[1699138800000,1699311600000]" data-allow-past="true" data-single="false">
+				<div class="Calendar js-calendar" data-year="2023" data-month="10" data-flight-count="true" data-picked-dates='["2023-11-05","2023-11-07"]' data-allow-past="true" data-single="false">
 
 					<header class="Calendar__header btn-group d-flex">
 						<button class="Calendar__previous btn btn-outline-primary w-100 js-previous" type="button">
@@ -283,17 +389,37 @@
 
 					<table class="Calendar__table table mt-5" role="grid">
 						<thead class="Calendar__days">
-							<tr class="Calendar__row">
-								<th scope="col" abbr="Sunday">Sun.</th>
-								<th scope="col" abbr="Monday">Mo.</th>
-								<th scope="col" abbr="Tuesday">Tu.</th>
-								<th scope="col" abbr="Wednesday">We.</th>
-								<th scope="col" abbr="Thursday">Th.</th>
-								<th scope="col" abbr="Friday">Fr.</th>
-								<th scope="col" abbr="Saturday">Sa.</th>
-							</tr>
+							<tr class="js-days"></tr>
 						</thead>
 
+						<tbody class="js-body"></tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+
+		<div class="row py-5 js-wrapper">
+			<div class="col-12 col-lg-10 offset-lg-1">
+				<h2 class="h4 mb-2">Custom markup <sup class="js-calendar-value fw-normal text-muted"></sup></h2>
+				<p class="text-muted mb-4">
+					You own the chrome and the cell HTML. Only the hooks matter
+					(<code>.js-previous</code>, <code>.js-title</code>, <code>.js-next</code>,
+					<code>.js-body</code>, <code>.js-days</code>, <code>.js-day</code>).
+					This demo swaps Bootstrap for a custom header, <code>stateClasses</code>, and a <code>renderInner</code> that rebuilds each day cell.
+				</p>
+			</div>
+			<div class="col-12 col-lg-10 offset-lg-1">
+				<div class="Shell js-calendar" data-custom-markup="true" data-deselect="true" data-picked-dates="[]">
+					<nav class="Shell__nav" aria-label="Month">
+						<button type="button" class="Shell__nav-btn js-previous" aria-label="Previous month">‹</button>
+						<h3 class="Shell__title js-title"></h3>
+						<button type="button" class="Shell__nav-btn js-next" aria-label="Next month">›</button>
+					</nav>
+
+					<table class="Shell__grid" role="grid">
+						<thead class="Shell__days">
+							<tr class="js-days"></tr>
+						</thead>
 						<tbody class="js-body"></tbody>
 					</table>
 				</div>
@@ -305,7 +431,7 @@
 
 
 	<script type="module">
-		import Calendar from './calendar.js';
+		import Calendar, { getWeekStart } from './lib/index.ts';
 
 		const flights = [
 			{
@@ -1279,10 +1405,10 @@
 		];
 
 		const wrappers = [...document.querySelectorAll('.js-wrapper')];
+		const calendars = [];
 
 		wrappers.forEach($wrapper => {
 			const $calendar = $wrapper.querySelector('.js-calendar');
-			const firstDay = parseInt($calendar.getAttribute('data-first-day')) || 0;
 
 			const $value = $wrapper.querySelector('.js-calendar-value');
 
@@ -1296,7 +1422,8 @@
 					flights: 'Flights',
 				},
 			};
-			const flightCount = JSON.parse($calendar.getAttribute('data-flight-count'));
+			const flightCount = JSON.parse($calendar.getAttribute('data-flight-count') || 'false');
+			const isCustomMarkup = $calendar.getAttribute('data-custom-markup') === 'true';
 			const getFlight = date =>
 				flights.find(flight =>
 					new Date(flight.date.slice(0, 10)).toISOString().slice(0, 10) === date
@@ -1305,36 +1432,77 @@
 				);
 
 			const calendar = new Calendar($calendar, {
-				single: $calendar.getAttribute('data-single') === 'true',
+				single: $calendar.getAttribute('data-single') !== 'false',
 				allowPast: $calendar.getAttribute('data-allow-past') === 'true',
-				deselect: true,
-				firstDay,
+				deselect: $calendar.getAttribute('data-deselect') === 'true',
+				...(isCustomMarkup
+					? {
+							stateClasses: {
+								active: 'is-selected',
+								range: 'is-in-range',
+								start: 'is-start',
+								end: 'is-end',
+							},
+						}
+					: {
+							buttonClass: 'btn btn-outline-primary',
+						}),
 			});
-			calendar.renderInner = (inner, date, common) => {
-				if (flightCount && inner.querySelector('button')) {
-					const flight = getFlight(date.toISOString().slice(0, 10));
 
-					if (flight) {
-						const { count } = flight;
-						const $button = inner.querySelector('button');
-
-						$button.innerHTML += `<span class="badge badge-light">${count}</span>`;
+			if (isCustomMarkup) {
+				calendar.renderInner = (inner, date) => {
+					const button = inner.querySelector('.js-day');
+					if (!button) {
+						return;
 					}
-				}
-			};
+
+					button.classList.add('Shell__day');
+					button.innerHTML = `<time datetime="${date.toISOString().slice(0, 10)}">${date.getDate()}</time>`;
+				};
+			} else {
+				calendar.renderInner = (inner, date) => {
+					if (flightCount && inner.querySelector('button')) {
+						const flight = getFlight(date.toISOString().slice(0, 10));
+
+						if (flight) {
+							const { count } = flight;
+							const $button = inner.querySelector('button');
+
+							$button.innerHTML += `<span class="badge text-bg-light">${count}</span>`;
+						}
+					}
+				};
+			}
 			calendar.init();
+			calendars.push(calendar);
 
 			$calendar.addEventListener('Calendar.change', event => {
 				console.log(event.detail.values);
-				$value.innerHTML = event.detail.values
-					.map(value => {
-						const date = new Date(value);
-
-						return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
-					})
-					.join(' ➡️ ');
+				$value.innerHTML = event.detail.values.join(' ➡️ ');
 			});
 		});
+
+		const setLocale = (locale) => {
+			document.documentElement.lang = locale;
+
+			document.querySelectorAll('.js-lang').forEach(($btn) => {
+				const active = $btn.dataset.lang === locale;
+				$btn.classList.toggle('active', active);
+				$btn.setAttribute('aria-pressed', String(active));
+			});
+
+			calendars.forEach((calendar) => {
+				calendar.options.locale = locale;
+				calendar.options.firstDay = getWeekStart(locale);
+				calendar.render();
+			});
+		};
+
+		document.querySelectorAll('.js-lang').forEach(($btn) => {
+			$btn.addEventListener('click', () => setLocale($btn.dataset.lang));
+		});
+
+		setLocale(document.documentElement.lang || 'en');
 	</script>
 </body>
 
