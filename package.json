@@ -17,7 +17,7 @@
 		"dist"
 	],
 	"scripts": {
-		"deploy": "pnpm login && pnpm run build && pnpm publish",
+		"release": "pnpm login && pnpm run build && pnpm publish",
 		"dev": "vite",
 		"build": "vite build",
 		"docs": "pnpm run build && cp dist/calendar.js docs/calendar.js && sed \"s|from './lib/index.ts'|from './calendar.js'|\" index.html > docs/index.html"
