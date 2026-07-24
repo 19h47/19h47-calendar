@@ -185,8 +185,14 @@ detail: {
 
 ## Live demos
 
-- [GitHub Pages](https://19h47.github.io/19h47-calendar/)
+- [GitHub Pages](https://19h47.github.io/19h47-calendar/) (from `docs/`)
 - Local: `pnpm dev` then open the app (see `index.html`)
+
+Refresh the Pages demo after lib changes:
+
+```bash
+pnpm run docs
+```
 
 ## Acknowledgments
 
