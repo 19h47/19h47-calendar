@@ -1,9 +1,5 @@
-import {
-	fromDayString,
-	getDaysInMonth,
-	toDayString,
-} from "./utils";
-import type Calendar from "./index";
+import { fromDayString, getDaysInMonth, toDayString } from "./utils.js";
+import type Calendar from "./calendar.js";
 
 /** APG day-grid focus: roving tabindex + keyboard navigation. */
 export default class Keyboard {
@@ -14,7 +10,7 @@ export default class Keyboard {
 	}
 
 	setFocusDay($button: HTMLButtonElement, { focus = true } = {}) {
-		this.host.$body.querySelectorAll(".js-day").forEach(($el) => {
+		this.host.$body?.querySelectorAll(".js-day").forEach(($el) => {
 			($el as HTMLButtonElement).tabIndex = -1;
 		});
 
@@ -42,8 +38,8 @@ export default class Keyboard {
 			new Date(
 				current.year,
 				current.month,
-				Math.min(dayOfMonth, lastDay)
-			)
+				Math.min(dayOfMonth, lastDay),
+			),
 		);
 	}
 
@@ -56,8 +52,8 @@ export default class Keyboard {
 		this.host.current.year = date.getFullYear();
 		this.host.current.month = date.getMonth();
 
-		const $button = this.host.$body.querySelector(
-			`[data-day="${day}"]`
+		const $button = this.host.$body?.querySelector(
+			`[data-day="${day}"]`,
 		) as HTMLButtonElement | null;
 
 		if ($button) {
@@ -69,8 +65,12 @@ export default class Keyboard {
 	}
 
 	sync({ focus = false } = {}) {
+		if (!this.host.$body) {
+			return;
+		}
+
 		const buttons = Array.from(
-			this.host.$body.querySelectorAll(".js-day")
+			this.host.$body.querySelectorAll(".js-day"),
 		) as HTMLButtonElement[];
 
 		if (!buttons.length) {
@@ -84,7 +84,7 @@ export default class Keyboard {
 			(this.host.current.day &&
 				(byDay(this.host.current.day) || byDay(this.dayInView()))) ||
 			buttons.find(($el) =>
-				this.host.picked.includes($el.getAttribute("data-day") || "")
+				this.host.picked.includes($el.getAttribute("data-day") || ""),
 			) ||
 			byDay(this.host.day) ||
 			buttons[0];
@@ -92,9 +92,21 @@ export default class Keyboard {
 		this.setFocusDay(preferred, { focus });
 	}
 
-	handleKeydown = (event: KeyboardEvent) => {
+	attach(): void {
+		this.host.$body?.addEventListener("keydown", this.#handleKeydown, false);
+	}
+
+	detach(): void {
+		this.host.$body?.removeEventListener(
+			"keydown",
+			this.#handleKeydown,
+			false,
+		);
+	}
+
+	#handleKeydown = (event: KeyboardEvent) => {
 		const $target = (event.target as HTMLElement).closest(
-			".js-day"
+			".js-day",
 		) as HTMLButtonElement | null;
 
 		if (!$target) {
@@ -113,7 +125,7 @@ export default class Keyboard {
 			}
 		};
 
-		const codes: any = {
+		const codes: Record<string, () => void | false> = {
 			ArrowLeft: () => {
 				event.preventDefault();
 				this.focusDayByOffset(day, -1);

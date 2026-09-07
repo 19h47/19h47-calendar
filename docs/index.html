@@ -67,7 +67,7 @@
 			align-items: center;
 		}
 
-		/* Custom markup demo — no Bootstrap chrome */
+		/* Custom markup demo, no Bootstrap chrome */
 		.Shell {
 			max-width: 22rem;
 			padding: 1.25rem;
@@ -204,6 +204,52 @@
 		.Shell__day time {
 			font-variant-numeric: tabular-nums;
 		}
+
+		.Calendar--events .js-day {
+			position: relative;
+			display: inline-flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			min-width: 2.5rem;
+			min-height: 2.75rem;
+			gap: 0.15rem;
+		}
+
+		.Calendar--events .js-day time {
+			font-variant-numeric: tabular-nums;
+			line-height: 1;
+		}
+
+		.Calendar--events .js-day[aria-disabled="true"] {
+			opacity: 0.45;
+			cursor: default;
+		}
+
+		.Calendar--events .js-day[aria-disabled="true"]:hover {
+			color: var(--bs-btn-color);
+			background-color: var(--bs-btn-bg);
+			border-color: var(--bs-btn-border-color);
+		}
+
+		.Calendar--events .js-day[data-has-event]::after {
+			content: "";
+			width: 0.35rem;
+			height: 0.35rem;
+			border-radius: 999px;
+			background: var(--bs-primary);
+		}
+
+		.Calendar--events .js-day.active[data-has-event]::after {
+			background: #fff;
+		}
+
+		.EventPanel {
+			border: 1px solid var(--bs-border-color);
+			border-radius: var(--bs-border-radius-lg);
+			background: var(--bs-light);
+			padding: 1rem;
+		}
 	</style>
 </head>
 
@@ -231,10 +277,10 @@
 		<div class="row py-5 js-wrapper">
 			<div class="col-12 col-lg-10 offset-lg-1">
 				<h2 class="h4 mb-2">Single date <sup class="js-calendar-value fw-normal text-muted"></sup></h2>
-				<p class="text-muted mb-4">Default mode (<code>single: true</code>). Past dates are disabled. Use the lang picker above to switch locale and week start.</p>
+				<p class="text-muted mb-4">Default mode (<code>mode="single"</code>). Past dates are disabled. Use the lang picker above to switch locale and week start.</p>
 			</div>
 			<div class="col-12 col-lg-10 offset-lg-1">
-				<div class="Calendar js-calendar" data-flight-count="true" data-picked-dates="[]">
+				<div class="Calendar js-calendar" data-flight-count="true" data-picked="[]">
 					<header class="Calendar__header btn-group d-flex">
 						<button class="Calendar__previous btn btn-outline-primary w-100 js-previous" type="button">
 							Previous Month
@@ -261,10 +307,10 @@
 		<div class="row py-5 js-wrapper">
 			<div class="col-12 col-lg-10 offset-lg-1">
 				<h2 class="h4 mb-2">Single date + deselect <sup class="js-calendar-value fw-normal text-muted"></sup></h2>
-				<p class="text-muted mb-4"><code>deselect: true</code> — click the selected day again to clear it. French chrome labels (locale still follows the picker).</p>
+				<p class="text-muted mb-4"><code>deselect</code> on the root. Click the selected day again to clear it. French chrome labels (locale still follows the picker).</p>
 			</div>
 			<div class="col-12 col-lg-10 offset-lg-1">
-				<div class="Calendar js-calendar" data-flight-count="true" data-picked-dates="[]" data-deselect="true">
+				<div class="Calendar js-calendar" data-flight-count="true" data-picked="[]" deselect>
 					<header class="Calendar__header btn-group d-flex">
 						<button class="Calendar__previous btn btn-outline-primary w-100 js-previous" type="button">
 							Mois précédent
@@ -291,10 +337,10 @@
 		<div class="row py-5 js-wrapper">
 			<div class="col-12 col-lg-10 offset-lg-1">
 				<h2 class="h4 mb-2">Date range <sup class="js-calendar-value fw-normal text-muted"></sup></h2>
-				<p class="text-muted mb-4"><code>single: false</code> — pick a start and an end. Hover highlights the range between the two clicks.</p>
+				<p class="text-muted mb-4"><code>mode="range"</code>. Pick a start and an end. Hover highlights the range between the two clicks.</p>
 			</div>
 			<div class="col-12 col-lg-10 offset-lg-1">
-				<div class="Calendar js-calendar" data-flight-count="true" data-picked-dates="[]" data-single="false">
+				<div class="Calendar js-calendar" data-flight-count="true" data-picked="[]" mode="range">
 					<header class="Calendar__header btn-group d-flex">
 						<button class="Calendar__previous btn btn-outline-primary w-100 js-previous" type="button">
 							Previous Month
@@ -321,10 +367,10 @@
 		<div class="row py-5 js-wrapper">
 			<div class="col-12 col-lg-10 offset-lg-1">
 				<h2 class="h4 mb-2">Range without header <sup class="js-calendar-value fw-normal text-muted"></sup></h2>
-				<p class="text-muted mb-4">Navigation controls are optional — only the grid is required (<code>.js-body</code> + <code>.js-days</code>).</p>
+				<p class="text-muted mb-4">Navigation controls are optional. Only the grid is required (<code>.js-body</code> + <code>.js-days</code>).</p>
 			</div>
 			<div class="col-12 col-lg-10 offset-lg-1">
-				<div class="Calendar js-calendar" data-flight-count="true" data-picked-dates="[]" data-single="false">
+				<div class="Calendar js-calendar" data-flight-count="true" data-picked="[]" mode="range">
 					<table class="Calendar__table table mt-5" role="grid">
 						<thead class="Calendar__days">
 							<tr class="js-days"></tr>
@@ -339,10 +385,10 @@
 		<div class="row py-5 js-wrapper">
 			<div class="col-12 col-lg-10 offset-lg-1">
 				<h2 class="h4 mb-2">Allow past dates <sup class="js-calendar-value fw-normal text-muted"></sup></h2>
-				<p class="text-muted mb-4"><code>allowPast: true</code> — days before today become selectable (range mode).</p>
+				<p class="text-muted mb-4"><code>allow-past</code> on the root. Days before today become selectable (range mode).</p>
 			</div>
 			<div class="col-12 col-lg-10 offset-lg-1">
-				<div class="Calendar js-calendar" data-flight-count="true" data-picked-dates="[]" data-allow-past="true" data-single="false">
+				<div class="Calendar js-calendar" data-flight-count="true" data-picked="[]" allow-past mode="range">
 
 					<header class="Calendar__header btn-group d-flex">
 						<button class="Calendar__previous btn btn-outline-primary w-100 js-previous" type="button">
@@ -370,10 +416,10 @@
 		<div class="row py-5 js-wrapper">
 			<div class="col-12 col-lg-10 offset-lg-1">
 				<h2 class="h4 mb-2">Preselected range <sup class="js-calendar-value fw-normal text-muted"></sup></h2>
-				<p class="text-muted mb-4">Initial view via <code>data-year</code> / <code>data-month</code>, selection via <code>data-picked-dates</code> (JSON <code>YYYY-MM-DD</code> days).</p>
+				<p class="text-muted mb-4">Initial view via <code>data-year</code> / <code>data-month</code>, selection via <code>data-picked</code> (JSON <code>YYYY-MM-DD</code> days).</p>
 			</div>
 			<div class="col-12 col-lg-10 offset-lg-1">
-				<div class="Calendar js-calendar" data-year="2023" data-month="10" data-flight-count="true" data-picked-dates='["2023-11-05","2023-11-07"]' data-allow-past="true" data-single="false">
+				<div class="Calendar js-calendar" data-year="2023" data-month="10" data-flight-count="true" data-picked='["2023-11-05","2023-11-07"]' allow-past mode="range">
 
 					<header class="Calendar__header btn-group d-flex">
 						<button class="Calendar__previous btn btn-outline-primary w-100 js-previous" type="button">
@@ -400,6 +446,90 @@
 
 		<div class="row py-5 js-wrapper">
 			<div class="col-12 col-lg-10 offset-lg-1">
+				<h2 class="h4 mb-2">Multiple dates <sup class="js-calendar-value fw-normal text-muted"></sup></h2>
+				<p class="text-muted mb-4"><code>mode="multiple"</code>. Toggle days on and off. Click a selected day again to remove it.</p>
+			</div>
+			<div class="col-12 col-lg-10 offset-lg-1">
+				<div class="Calendar js-calendar" data-picked="[]" mode="multiple" allow-past>
+					<header class="Calendar__header btn-group d-flex">
+						<button class="Calendar__previous btn btn-outline-primary w-100 js-previous" type="button">
+							Previous Month
+						</button>
+						<button type="button" class="Calendar__title btn btn-outline-primary w-100 js-title">
+							01
+						</button>
+						<button class="Calendar__next btn btn-outline-primary w-100 js-next" type="button">
+							Next Month
+						</button>
+					</header>
+
+					<table class="Calendar__table table mt-5" role="grid">
+						<thead class="Calendar__days">
+							<tr class="js-days"></tr>
+						</thead>
+
+						<tbody class="js-body"></tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+
+		<div class="row py-5">
+			<div class="col-12 col-lg-10 offset-lg-1">
+				<h2 class="h4 mb-2">Advanced: event markers <sup class="js-events-value fw-normal text-muted"></sup></h2>
+				<p class="text-muted mb-4">
+					Override <code>renderInner</code> to wrap each day in <code>&lt;time&gt;</code>,
+					paint dots on days with events, and disable days without events.
+				</p>
+			</div>
+			<div class="col-12 col-lg-10 offset-lg-1">
+				<div class="row g-4 align-items-start">
+					<div class="col-md-7">
+						<div
+							class="Calendar Calendar--events js-calendar-events"
+							locale="fr"
+							deselect
+							allow-past
+							data-picked="[]"
+							name="events"
+						>
+							<header class="Calendar__header btn-group d-flex">
+								<button class="Calendar__previous btn btn-outline-primary w-100 js-previous" type="button" aria-label="Mois precedent">
+									Mois precedent
+								</button>
+								<button type="button" class="Calendar__title btn btn-outline-primary w-100 js-title" id="events-calendar-label" aria-live="polite">
+									01
+								</button>
+								<button class="Calendar__next btn btn-outline-primary w-100 js-next" type="button" aria-label="Mois suivant">
+									Mois suivant
+								</button>
+							</header>
+
+							<table class="Calendar__table table mt-5" role="grid" aria-labelledby="events-calendar-label">
+								<thead class="Calendar__days">
+									<tr class="js-days"></tr>
+								</thead>
+								<tbody class="js-body"></tbody>
+							</table>
+						</div>
+					</div>
+					<div class="col-md-5">
+						<aside class="EventPanel" aria-live="polite">
+							<p class="text-uppercase text-muted small mb-1">Evenement</p>
+							<p class="fw-semibold mb-1 js-event-title">Selectionnez un jour marque</p>
+							<p class="font-monospace small text-muted mb-3 js-event-date"></p>
+							<ul class="small text-muted mb-0">
+								<li>Point = jour avec evenement</li>
+								<li>Jours sans evenement desactives</li>
+							</ul>
+						</aside>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="row py-5 js-wrapper">
+			<div class="col-12 col-lg-10 offset-lg-1">
 				<h2 class="h4 mb-2">Custom markup <sup class="js-calendar-value fw-normal text-muted"></sup></h2>
 				<p class="text-muted mb-4">
 					You own the chrome and the cell HTML. Only the hooks matter
@@ -409,7 +539,7 @@
 				</p>
 			</div>
 			<div class="col-12 col-lg-10 offset-lg-1">
-				<div class="Shell js-calendar" data-custom-markup="true" data-deselect="true" data-picked-dates="[]">
+				<div class="Shell js-calendar" data-custom-markup="true" deselect data-picked="[]">
 					<nav class="Shell__nav" aria-label="Month">
 						<button type="button" class="Shell__nav-btn js-previous" aria-label="Previous month">‹</button>
 						<h3 class="Shell__title js-title"></h3>
@@ -431,7 +561,7 @@
 
 
 	<script type="module">
-		import Calendar, { getWeekStart } from './calendar.js';
+		import Calendar, { getWeekStart, toDayString } from './calendar.js';
 
 		const flights = [
 			{
@@ -1432,9 +1562,6 @@
 				);
 
 			const calendar = new Calendar($calendar, {
-				single: $calendar.getAttribute('data-single') !== 'false',
-				allowPast: $calendar.getAttribute('data-allow-past') === 'true',
-				deselect: $calendar.getAttribute('data-deselect') === 'true',
 				...(isCustomMarkup
 					? {
 							stateClasses: {
@@ -1478,9 +1605,84 @@
 
 			$calendar.addEventListener('Calendar.change', event => {
 				console.log(event.detail.values);
-				$value.innerHTML = event.detail.values.join(' ➡️ ');
+				$value.innerHTML = event.detail.values.join(' to ');
 			});
 		});
+
+		const $eventsCalendar = document.querySelector('.js-calendar-events');
+		const $eventsValue = document.querySelector('.js-events-value');
+		const $eventTitle = document.querySelector('.js-event-title');
+		const $eventDate = document.querySelector('.js-event-date');
+
+		const dayOffset = (offset) => {
+			const date = new Date();
+			date.setHours(0, 0, 0, 0);
+			date.setDate(date.getDate() + offset);
+			return date;
+		};
+
+		const events = {
+			[toDayString(dayOffset(1))]: 'Kick-off projet',
+			[toDayString(dayOffset(3))]: 'Revue design',
+			[toDayString(dayOffset(8))]: 'Atelier accessibilite',
+			[toDayString(dayOffset(12))]: 'Livraison sprint',
+		};
+
+		if ($eventsCalendar) {
+			const eventsCalendar = new Calendar($eventsCalendar, {
+				buttonClass: 'btn btn-outline-primary',
+			});
+
+			eventsCalendar.renderInner = (inner, date) => {
+				const button = inner.querySelector('.js-day');
+				if (!button) {
+					return;
+				}
+
+				const day = toDayString(date);
+				const hasEvent = Boolean(events[day]);
+
+				button.innerHTML = `<time datetime="${day}">${date.getDate()}</time>`;
+
+				if (hasEvent) {
+					button.dataset.hasEvent = '';
+					button.title = events[day];
+				} else {
+					button.setAttribute('aria-disabled', 'true');
+					button.removeAttribute('aria-selected');
+					button.classList.remove('active', 'start', 'end', 'range');
+				}
+			};
+
+			eventsCalendar.init();
+			calendars.push(eventsCalendar);
+
+			eventsCalendar.el.addEventListener('Calendar.change', (event) => {
+				const day = event.detail.values[0];
+
+				if ($eventsValue) {
+					$eventsValue.textContent = day || '';
+				}
+
+				if (!$eventTitle || !$eventDate) {
+					return;
+				}
+
+				if (!day || !events[day]) {
+					$eventTitle.textContent = 'Selectionnez un jour marque';
+					$eventDate.textContent = '';
+					return;
+				}
+
+				$eventTitle.textContent = events[day];
+				$eventDate.textContent = new Date(`${day}T12:00:00`).toLocaleDateString('fr', {
+					weekday: 'long',
+					day: 'numeric',
+					month: 'long',
+					year: 'numeric',
+				});
+			});
+		}
 
 		const setLocale = (locale) => {
 			document.documentElement.lang = locale;

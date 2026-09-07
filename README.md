@@ -1,6 +1,8 @@
 # @19h47/calendar
 
-Lightweight date / range picker. Markup and CSS are yours — the package fills the grid and handles selection.
+Lightweight date / range / multi-date picker. Markup and CSS are yours. The package fills the grid and handles selection.
+
+Follows the [WAI-ARIA APG date picker grid](https://www.w3.org/WAI/ARIA/apg/patterns/combobox/examples/combobox-datepicker/).
 
 ## Installation
 
@@ -16,7 +18,7 @@ Required hooks:
 | -------- | ---- |
 | Root element | Passed to `new Calendar(el, options)` |
 | `.js-previous` / `.js-next` | Month navigation (optional) |
-| `.js-title` | Month / year label; click advances to the next month (same as `.js-next`) |
+| `.js-title` | Month / year label. Click advances to the next month (same as `.js-next`) |
 | `.js-days` | Weekday headers row |
 | `.js-body` | Day cells |
 | `.js-day` | Day button (generated) |
@@ -24,9 +26,9 @@ Required hooks:
 ```html
 <div class="Calendar js-calendar">
 	<header>
-		<button type="button" class="js-previous">Previous</button>
+		<button type="button" class="js-previous" aria-label="Previous month">Previous</button>
 		<button type="button" class="js-title" id="calendar-label" aria-live="polite"></button>
-		<button type="button" class="js-next">Next</button>
+		<button type="button" class="js-next" aria-label="Next month">Next</button>
 	</header>
 	<table role="grid" aria-labelledby="calendar-label">
 		<thead>
@@ -45,15 +47,15 @@ import Calendar, { type Options } from "@19h47/calendar";
 const el = document.querySelector(".js-calendar") as HTMLElement;
 const options: Partial<Options> = {
 	locale: "fr",
+	mode: "single",
 	deselect: true,
-	buttonClass: "btn btn-outline-primary", // optional — lib ships unstyled buttons
+	buttonClass: "btn btn-outline-primary",
 };
 
 const calendar = new Calendar(el, options);
 calendar.init();
 
 el.addEventListener("Calendar.change", ({ detail }) => {
-	// detail.values → string[] (`YYYY-MM-DD`)
 	console.log(detail.values);
 });
 ```
@@ -62,26 +64,34 @@ el.addEventListener("Calendar.change", ({ detail }) => {
 
 ### Single date
 
+```html
+<div class="js-calendar" mode="single" deselect data-picked="[]">...</div>
+```
+
 ```js
-new Calendar(el, { single: true, deselect: true }).init();
+new Calendar(el).init();
 ```
 
 ### Date range
 
-```js
-new Calendar(el, { single: false }).init();
+```html
+<div class="js-calendar" mode="range" data-picked="[]">...</div>
 ```
 
-### Locale & week start
+### Multiple dates
 
-`locale` drives labels via `Intl`. Week start defaults from the locale (`weekInfo`); pass `firstDay` to override.
+Toggle days on and off. Click a selected day again to remove it.
+
+```html
+<div class="js-calendar" mode="multiple" allow-past data-picked="[]">...</div>
+```
+
+### Locale and week start
+
+`locale` drives labels via `Intl`. Week start defaults from the locale (`weekInfo`). Pass `firstDay` to override.
 
 ```js
 new Calendar(el, { locale: "fr" }).init();
-// fr → week starts Monday
-
-new Calendar(el, { locale: "en", firstDay: 1 }).init();
-// force Monday despite en
 ```
 
 Update at runtime:
@@ -101,8 +111,8 @@ new Calendar(el, {
 	locale: "fr",
 	days: ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"],
 	months: [
-		"Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
-		"Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre",
+		"Janvier", "Fevrier", "Mars", "Avril", "Mai", "Juin",
+		"Juillet", "Aout", "Septembre", "Octobre", "Novembre", "Decembre",
 	],
 }).init();
 ```
@@ -121,36 +131,43 @@ calendar.renderInner = (inner, date) => {
 };
 ```
 
-Pair with custom `stateClasses` / header markup — see the **Custom markup** demo in `index.html`.
+### Advanced: event markers
+
+The demo app includes a full example: wrap days in `<time>`, show dots on days with events, and disable days without events via `aria-disabled` in `renderInner`.
 
 ## Options
 
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
+| `mode` | `"single"` / `"range"` / `"multiple"` | `"single"` | Selection behaviour |
 | `locale` | `string` | `document.documentElement.lang` or `"en"` | BCP 47 locale for title and weekday/month labels |
-| `buttonClass` | `string` | `""` | Extra classes on day buttons (e.g. Bootstrap) |
-| `months` | `string[]` | — | Month names override (Jan→Dec). Defaults to `Intl` |
-| `days` | `string[]` | — | Weekday labels override (Sun→Sat). Defaults to `Intl` |
-| `single` | `boolean` | `true` | Single date vs range |
-| `firstDay` | `number` | from locale | Week start (`0`=Sun … `6`=Sat) |
+| `buttonClass` | `string` | `""` | Extra classes on day buttons |
+| `months` | `string[]` | - | Month names override (Jan to Dec). Defaults to `Intl` |
+| `days` | `string[]` | - | Weekday labels override (Sun to Sat). Defaults to `Intl` |
+| `firstDay` | `number` | from locale | Week start (`0`=Sun ... `6`=Sat) |
 | `deselect` | `boolean` | `false` | Allow clearing the selection in single mode |
 | `allowPast` | `boolean` | `false` | Allow selecting past dates |
-| `name` | `string` | — | Forwarded in `Calendar.change` detail |
+| `name` | `string` | - | Forwarded in `Calendar.change` detail |
 | `stateClasses` | `object` | see source | Selection classes (`active`, `range`, `start`, `end`) |
 
-Exported types: `Options`, `StateClasses`, `Current`. Also exported: `getWeekStart`, `toDayString`, `fromDayString`.
+Exported types: `Options`, `Mode`, `StateClasses`, `Current`, `Detail`. Also exported: `getWeekStart`, `toDayString`, `fromDayString`.
 
 ## Attributes
 
 | Attribute | Description |
 | --------- | ----------- |
-| `data-month` | Initial month (`0`–`11`) |
+| `mode` | `single`, `range`, or `multiple` |
+| `data-month` | Initial month (`0` to `11`) |
 | `data-year` | Initial year |
-| `data-picked-dates` | JSON array of `YYYY-MM-DD` days to preselect, e.g. `["2023-11-05","2023-11-07"]` |
+| `data-picked` | JSON array of `YYYY-MM-DD` days to preselect |
+| `deselect` | Allow deselect in single mode |
+| `allow-past` | Allow past dates |
+| `first-day` | Week start override |
+| `locale` / `data-locale` | BCP 47 locale |
 
 ## Accessibility
 
-The calendar grid follows the [WAI-ARIA APG date grid](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/examples/datepicker-dialog/) practices.
+The calendar grid follows the [WAI-ARIA APG date grid](https://www.w3.org/WAI/ARIA/apg/patterns/combobox/examples/combobox-datepicker/) practices.
 
 **In your markup (source of truth):** `role="grid"`, `aria-labelledby`, `aria-live` on the title, `aria-label` on nav buttons, etc.
 
@@ -174,19 +191,32 @@ The calendar grid follows the [WAI-ARIA APG date grid](https://www.w3.org/WAI/AR
 
 ## Events
 
-`Calendar.change` — fired on selection change.
+`Calendar.change` on the root element (bubbles).
 
 ```ts
 detail: {
-	values: string[]; // `YYYY-MM-DD`
+	values: string[];
 	name?: string;
 }
 ```
 
+## API
+
+| Method / property | Description |
+| ----------------- | ----------- |
+| `options` | Runtime options object |
+| `picked` | Selected days as `YYYY-MM-DD` |
+| `current` | Viewed `{ month, year, day }` |
+| `setPicked(values, emit?)` | Assign selection and mirror `data-picked` |
+| `render()` | Rebuild the grid |
+| `move(delta)` | Navigate by months (`-1` = previous, `1` = next) |
+| `destroy()` | Detach listeners and clear the grid |
+| `renderInner(inner, date)` | Per-cell hook (override) |
+
 ## Live demos
 
 - [GitHub Pages](https://19h47.github.io/19h47-calendar/) (from `docs/`)
-- Local: `pnpm dev` then open the app (see `index.html`)
+- Local: `pnpm dev` then open [http://localhost:5173/](http://localhost:5173/)
 
 Refresh the Pages demo after lib changes:
 
@@ -197,4 +227,4 @@ pnpm run docs
 ## Acknowledgments
 
 - [Litepicker](https://github.com/wakirin/Litepicker)
-- [WAI-ARIA APG — Date Picker Dialog](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/examples/datepicker-dialog/)
+- [WAI-ARIA APG combobox datepicker](https://www.w3.org/WAI/ARIA/apg/patterns/combobox/examples/combobox-datepicker/)
